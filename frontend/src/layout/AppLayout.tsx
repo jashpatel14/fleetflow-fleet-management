@@ -34,20 +34,22 @@ const AppLayout = () => {
       <Sidebar mobileOpen={mobileOpen} isCollapsed={isCollapsed} onClose={() => setMobileOpen(false)} />
       <div className="main-area">
         <header className="top-header">
-          <button className="mobile-menu-btn" onClick={handleToggle}>
-            <Menu size={20} strokeWidth={1.5} color="var(--text-1)" />
-          </button>
-          <div style={{ flex: 1 }}>
-            <div className="header-title">{meta.title}</div>
-            {meta.sub && <div className="header-sub">{meta.sub}</div>}
+          <div className="header-content-inner">
+            <button className="mobile-menu-btn" onClick={handleToggle}>
+              <Menu size={20} strokeWidth={1.5} color="var(--text-1)" />
+            </button>
+            <div style={{ flex: 1 }}>
+              <div className="header-title">{meta.title}</div>
+              {meta.sub && <div className="header-sub">{meta.sub}</div>}
+            </div>
+            <div className="header-pill">
+              <span className="status-dot" />
+              System Online
+            </div>
+            <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 4 }}>
+              {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </span>
           </div>
-          <div className="header-pill">
-            <span className="status-dot" />
-            System Online
-          </div>
-          <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 4 }}>
-            {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-          </span>
         </header>
         <main className="page-content">
           <Outlet />

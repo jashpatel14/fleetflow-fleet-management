@@ -361,11 +361,20 @@ textarea {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 0 var(--pad);
-  gap: 12px;
   position: sticky;
   top: 0;
   z-index: 50;
+  width: 100%;
+}
+
+.header-content-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--pad);
+  gap: 12px;
 }
 
 .header-title {
@@ -402,6 +411,9 @@ textarea {
 
 .page-content {
   padding: var(--pad);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* ── Cards ──────────────────────────────────────────────────────── */

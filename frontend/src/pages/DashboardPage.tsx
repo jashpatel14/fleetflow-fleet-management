@@ -101,7 +101,7 @@ const DashboardPage = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* 1. Critical Operational Alerts */}
       {(data.expiringLicenses > 0 || data.maintenanceOpen > 0) && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
           {data.expiringLicenses > 0 && (
             <OperationalAlert
               icon={<AlertTriangle />}
@@ -126,7 +126,7 @@ const DashboardPage = () => {
       )}
 
       {/* 2. Primary Actions (Prominent) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
         {[
           { to: '/trips', icon: <Navigation size={20} strokeWidth={SW} color="var(--primary)" />, title: 'Dispatch Trip', desc: 'Assign vehicle & driver' },
           { to: '/vehicles', icon: <Truck size={20} strokeWidth={SW} color="#16A34A" />, title: 'Add Vehicle', desc: 'Register fleet asset' },

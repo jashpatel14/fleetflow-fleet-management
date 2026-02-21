@@ -26,7 +26,7 @@ function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)
 function randomItem(arr) { return arr[randomInt(0, arr.length - 1)]; }
 
 async function main() {
-  console.log("🌱 Seeding FleetFlow database with 20 sample entries...");
+  console.log("🌱 Seeding FleetFlow database with 7 sample entries...");
 
   // ── Clean existing data (order matters for FK constraints) ─────────────────
   await prisma.auditLog.deleteMany();
@@ -80,7 +80,7 @@ async function main() {
   const vehicleTypes = Object.values(VehicleType);
   const vehicleStatuses = Object.values(VehicleStatus);
 
-  const vehiclePromises = Array.from({ length: 20 }).map((_, i) => {
+  const vehiclePromises = Array.from({ length: 7 }).map((_, i) => {
     const make = randomItem(MAKES);
     const type = randomItem(vehicleTypes);
     return prisma.vehicle.create({
@@ -105,7 +105,7 @@ async function main() {
   const expired = new Date(); expired.setFullYear(expired.getFullYear() - 1);
   const driverStatuses = Object.values(DriverStatus);
 
-  const driverPromises = Array.from({ length: 20 }).map((_, i) => {
+  const driverPromises = Array.from({ length: 7 }).map((_, i) => {
     return prisma.driver.create({
       data: {
         name: `${randomItem(FIRST_NAMES)} ${randomItem(LAST_NAMES)}`,
@@ -123,7 +123,7 @@ async function main() {
 
   // ── Trips ──────────────────────────────────────────────────────────────────
   const now = new Date();
-  const tripPromises = Array.from({ length: 20 }).map((_, i) => {
+  const tripPromises = Array.from({ length: 7 }).map((_, i) => {
     const v = randomItem(vehicles);
     const d = randomItem(drivers);
     const origin = randomItem(CITIES);
@@ -158,7 +158,7 @@ async function main() {
   console.log(`✅ Created ${trips.length} trips`);
 
   // ── Maintenance Logs ───────────────────────────────────────────────────────
-  const maintenancePromises = Array.from({ length: 20 }).map((_, i) => {
+  const maintenancePromises = Array.from({ length: 7 }).map((_, i) => {
     const status = randomItem(Object.values(MaintenanceStatus));
     return prisma.maintenanceLog.create({
       data: {
@@ -176,7 +176,7 @@ async function main() {
   console.log(`✅ Created ${maintenanceLogs.length} maintenance logs`);
 
   // ── Fuel Logs ──────────────────────────────────────────────────────────────
-  const fuelPromises = Array.from({ length: 20 }).map((_, i) => {
+  const fuelPromises = Array.from({ length: 7 }).map((_, i) => {
     const l = randomInt(50, 300);
     const cp = randomInt(90, 105) + Math.random();
     return prisma.fuelLog.create({
@@ -193,7 +193,7 @@ async function main() {
   console.log(`✅ Created ${fuelLogs.length} fuel logs`);
 
   // ── Audit Logs ─────────────────────────────────────────────────────────────
-  const auditPromises = Array.from({ length: 10 }).map((_, i) => {
+  const auditPromises = Array.from({ length: 7 }).map((_, i) => {
     return prisma.auditLog.create({
       data: {
         userId: randomItem(users).id,
