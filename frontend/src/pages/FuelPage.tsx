@@ -29,75 +29,82 @@ const FuelPage = () => {
     <div>
       {logs.length > 0 && (
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
-            <div className="kpi-label">Records Shown</div>
-            <div className="kpi-value" style={{ fontSize: 22 }}>{logs.length}</div>
+          <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
+            <div className="kpi-label" style={{ color: 'var(--green)' }}>Records Found</div>
+            <div className="kpi-value" style={{ color: 'var(--green)' }}>{logs.length}</div>
           </div>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
-            <div className="kpi-label">Total Litres</div>
-            <div className="kpi-value" style={{ fontSize: 22, color: 'var(--blue-text)' }}>{totalLitre.toFixed(0)}L</div>
+          <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
+            <div className="kpi-label" style={{ color: 'var(--green)' }}>Total Consumption</div>
+            <div className="kpi-value" style={{ color: 'var(--green)' }}>{totalLitre.toFixed(0)}L</div>
           </div>
-          <div className="kpi-card" style={{ padding: '14px 16px' }}>
-            <div className="kpi-label">Total Cost</div>
-            <div className="kpi-value" style={{ fontSize: 22, color: 'var(--red-text)' }}>₹{totalCost.toLocaleString()}</div>
+          <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
+            <div className="kpi-label" style={{ color: 'var(--green)' }}>Total Expenditure</div>
+            <div className="kpi-value" style={{ color: 'var(--green)' }}>₹{totalCost.toLocaleString()}</div>
           </div>
         </div>
       )}
 
-      <div className="toolbar">
+      <div className="toolbar" style={{ marginBottom: 16 }}>
         <div style={{ flex: 1, fontSize: 13, color: 'var(--text-3)' }}>Track fuel expenses per vehicle and trip</div>
         <button className="btn btn-primary" onClick={() => setModal(true)}>
           <Plus size={15} strokeWidth={SW} /> Log Fuel
         </button>
       </div>
 
-      <div className="table-wrap">
-        <div className="table-scroll">
-          {loading ? (
-            <div className="spinner-wrap"><div className="spinner" /></div>
-          ) : logs.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon"><Fuel size={36} strokeWidth={1} color="var(--text-4)" /></div>
-              <div className="empty-title">No fuel logs yet</div>
-              <div className="empty-desc">Start logging fuel expenses</div>
+      <div className="card" style={{ border: '2px solid var(--border)' }}>
+        <div className="card-header">
+          <div className="card-title" style={{ background: 'var(--blue-bg)', color: 'var(--blue)', padding: '4px 12px', borderRadius: '16px', display: 'inline-block' }}>
+            Recent Fuel Logs
+          </div>
+        </div>
+        <div className="table-wrap" style={{ border: 'none', borderRadius: 0 }}>
+          <div className="table-scroll">
+            {loading ? (
+              <div className="spinner-wrap"><div className="spinner" /></div>
+            ) : logs.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon"><Fuel size={36} strokeWidth={1} color="var(--text-4)" /></div>
+                <div className="empty-title">No fuel logs yet</div>
+                <div className="empty-desc">Start logging fuel expenses</div>
+              </div>
+            ) : (
+              <table>
+                <thead><tr>
+                  <th>Vehicle</th><th>Trip Number</th><th className="right">Volume</th>
+                  <th className="right">Rate</th><th className="right">Total</th><th>Logged At</th>
+                </tr></thead>
+                <tbody>
+                  {logs.map((log: any) => (
+                    <tr key={log.id}>
+                      <td style={{ fontWeight: 600 }}>
+                        {log.vehicle?.licensePlate}
+                        <span className="text-muted text-sm" style={{ fontWeight: 400 }}> · {log.vehicle?.make}</span>
+                      </td>
+                      <td style={{ fontSize: 13 }}>
+                        {log.trip
+                          ? <span style={{ color: 'var(--primary)', fontWeight: 500 }}>{log.trip.tripNumber}</span>
+                          : <span className="text-muted">Direct Fill</span>}
+                      </td>
+                      <td className="right mono">{log.liters}L</td>
+                      <td className="right mono">₹{log.costPerLiter}</td>
+                      <td className="right mono" style={{ fontWeight: 600 }}>₹{log.totalCost.toLocaleString()}</td>
+                      <td className="text-muted text-sm">{new Date(log.loggedAt).toLocaleDateString('en-IN')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          {total > LIMIT && (
+            <div className="pagination" style={{ borderTop: '1px solid var(--border-light)' }}>
+              <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
+              <div className="pagination-btns">
+                <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+                <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
+              </div>
             </div>
-          ) : (
-            <table>
-              <thead><tr>
-                <th>Vehicle</th><th>Trip</th><th className="right">Litres</th>
-                <th className="right">₹/Litre</th><th className="right">Total Cost</th><th>Date</th>
-              </tr></thead>
-              <tbody>
-                {logs.map((log: any) => (
-                  <tr key={log.id}>
-                    <td style={{ fontWeight: 600 }}>
-                      {log.vehicle?.licensePlate}
-                      <span className="text-muted text-sm"> · {log.vehicle?.make}</span>
-                    </td>
-                    <td style={{ fontSize: 13 }}>
-                      {log.trip
-                        ? <span style={{ color: 'var(--primary)' }}>{log.trip.tripNumber} <span className="text-muted">— {log.trip.origin}→{log.trip.destination}</span></span>
-                        : <span className="text-muted">Standalone</span>}
-                    </td>
-                    <td className="right mono">{log.liters}L</td>
-                    <td className="right mono">₹{log.costPerLiter}</td>
-                    <td className="right mono" style={{ fontWeight: 600 }}>₹{log.totalCost.toLocaleString()}</td>
-                    <td className="text-muted text-sm">{new Date(log.loggedAt).toLocaleDateString('en-IN')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           )}
         </div>
-        {total > LIMIT && (
-          <div className="pagination">
-            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
-            <div className="pagination-btns">
-              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
-              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
-            </div>
-          </div>
-        )}
       </div>
 
       {modal && <LogFuelModal onClose={() => setModal(false)} onSave={() => { setModal(false); load(); }} />}

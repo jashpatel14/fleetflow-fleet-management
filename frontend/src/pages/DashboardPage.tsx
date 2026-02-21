@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, cloneElement } from 'react';
+import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 import { reportsAPI, tripsAPI } from '../api/client';
 import {
@@ -12,11 +13,18 @@ const SW = 1.5;
 
 const KpiCard = ({
   icon, label, value, sub, iconBg, iconColor,
-}: { icon: React.ReactNode; label: string; value: string | number; sub?: string; iconBg: string; iconColor: string }) => (
+}: {
+  icon: ReactElement;
+  label: string;
+  value: string | number;
+  sub?: string;
+  iconBg: string;
+  iconColor: string
+}) => (
   <div className="kpi-card">
     <div className="kpi-icon-row">
       <div className="kpi-icon-wrap" style={{ background: iconBg }}>
-        {React.cloneElement(icon as React.ReactElement, { size: S, strokeWidth: SW, color: iconColor })}
+        {cloneElement(icon as ReactElement<any>, { size: S, strokeWidth: SW, color: iconColor })}
       </div>
     </div>
     <div className="kpi-label">{label}</div>
@@ -26,10 +34,10 @@ const KpiCard = ({
 );
 
 const DashboardPage = () => {
-  const [data, setData]         = useState<any>(null);
+  const [data, setData] = useState<any>(null);
   const [recentTrips, setTrips] = useState<any[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     Promise.all([reportsAPI.dashboard(), tripsAPI.getAll({ limit: 7, page: 1 })])
@@ -39,8 +47,8 @@ const DashboardPage = () => {
   }, []);
 
   if (loading) return <div className="spinner-wrap"><div className="spinner" /></div>;
-  if (error)   return <div className="alert alert-error"><AlertTriangle size={15} />{error}</div>;
-  if (!data)   return null;
+  if (error) return <div className="alert alert-error"><AlertTriangle size={15} />{error}</div>;
+  if (!data) return null;
 
   const util = data.vehicles.total > 0
     ? Math.round(((data.vehicles.onTrip + data.vehicles.available) / data.vehicles.total) * 100) : 0;
@@ -73,12 +81,12 @@ const DashboardPage = () => {
 
       {/* KPIs */}
       <div className="kpi-grid">
-        <KpiCard icon={<Truck />}         label="Total Fleet"        value={data.vehicles.total}     sub={`${util}% utilization`} iconBg="#EFF6FF" iconColor="#2563EB" />
-        <KpiCard icon={<CheckCircle2 />}  label="Available"          value={data.vehicles.available} iconBg="#F0FDF4" iconColor="#16A34A" />
-        <KpiCard icon={<Navigation />}    label="On Trip"            value={data.vehicles.onTrip}    iconBg="#EFF6FF" iconColor="#2563EB" />
-        <KpiCard icon={<Wrench />}        label="In Maintenance"     value={data.vehicles.inShop}    iconBg="#FFFBEB" iconColor="#B45309" />
-        <KpiCard icon={<Activity />}      label="Active Trips"       value={data.activeTrips}        iconBg="#F5F3FF" iconColor="#6D28D9" />
-        <KpiCard icon={<TrendingUp />}    label="Total Revenue"      value={`₹${(data.totalRevenue / 100000).toFixed(1)}L`} iconBg="#F0FDF4" iconColor="#16A34A" />
+        <KpiCard icon={<Truck />} label="Total Fleet" value={data.vehicles.total} sub={`${util}% utilization`} iconBg="#EFF6FF" iconColor="#2563EB" />
+        <KpiCard icon={<CheckCircle2 />} label="Available" value={data.vehicles.available} iconBg="#F0FDF4" iconColor="#16A34A" />
+        <KpiCard icon={<Navigation />} label="On Trip" value={data.vehicles.onTrip} iconBg="#EFF6FF" iconColor="#2563EB" />
+        <KpiCard icon={<Wrench />} label="In Maintenance" value={data.vehicles.inShop} iconBg="#FFFBEB" iconColor="#B45309" />
+        <KpiCard icon={<Activity />} label="Active Trips" value={data.activeTrips} iconBg="#F5F3FF" iconColor="#6D28D9" />
+        <KpiCard icon={<TrendingUp />} label="Total Revenue" value={`₹${(data.totalRevenue / 100000).toFixed(1)}L`} iconBg="#F0FDF4" iconColor="#16A34A" />
       </div>
 
       {/* Recent Trips */}
@@ -132,9 +140,9 @@ const DashboardPage = () => {
       {/* Quick Actions */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 16 }}>
         {[
-          { to: '/trips',       icon: <Navigation size={20} strokeWidth={SW} color="var(--primary)" />,       title: 'Dispatch Trip',   desc: 'Assign vehicle & driver' },
-          { to: '/vehicles',    icon: <Truck size={20} strokeWidth={SW} color="#16A34A" />,                    title: 'Add Vehicle',     desc: 'Register fleet asset' },
-          { to: '/maintenance', icon: <Wrench size={20} strokeWidth={SW} color="var(--orange-text)" />,        title: 'Log Maintenance', desc: 'Record service entry' },
+          { to: '/trips', icon: <Navigation size={20} strokeWidth={SW} color="var(--primary)" />, title: 'Dispatch Trip', desc: 'Assign vehicle & driver' },
+          { to: '/vehicles', icon: <Truck size={20} strokeWidth={SW} color="#16A34A" />, title: 'Add Vehicle', desc: 'Register fleet asset' },
+          { to: '/maintenance', icon: <Wrench size={20} strokeWidth={SW} color="var(--orange-text)" />, title: 'Log Maintenance', desc: 'Record service entry' },
         ].map(a => (
           <Link key={a.to} to={a.to} className="card" style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14, transition: 'box-shadow 0.2s ease' }}>
             <div style={{ width: 38, height: 38, borderRadius: 8, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
