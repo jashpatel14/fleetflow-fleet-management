@@ -1,12 +1,5 @@
 import axios from 'axios';
-import {
-  mockAuthAPI, mockVehiclesAPI, mockDriversAPI,
-  mockTripsAPI, mockMaintenanceAPI, mockFuelAPI, mockReportsAPI,
-} from './mockAPI';
 
-const IS_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
-
-// ── Real Axios client (used when IS_MOCK = false) ───────────────────────────
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: { 'Content-Type': 'application/json' },
@@ -32,15 +25,13 @@ api.interceptors.response.use(
 
 export default api;
 
-// ── Auth ─────────────────────────────────────────────────────────────────────
-export const authAPI = IS_MOCK ? mockAuthAPI : {
+export const authAPI = {
   login:    (data: any) => api.post('/auth/login', data),
   register: (data: any) => api.post('/auth/register', data),
   me:       ()          => api.get('/auth/me'),
 };
 
-// ── Vehicles ─────────────────────────────────────────────────────────────────
-export const vehiclesAPI = IS_MOCK ? mockVehiclesAPI : {
+export const vehiclesAPI = {
   getAll:       (params?: any)           => api.get('/vehicles', { params }),
   getStats:     ()                       => api.get('/vehicles/stats'),
   getById:      (id: string)             => api.get(`/vehicles/${id}`),
@@ -49,8 +40,7 @@ export const vehiclesAPI = IS_MOCK ? mockVehiclesAPI : {
   changeStatus: (id: string, status: string) => api.patch(`/vehicles/${id}/status`, { status }),
 };
 
-// ── Drivers ──────────────────────────────────────────────────────────────────
-export const driversAPI = IS_MOCK ? mockDriversAPI : {
+export const driversAPI = {
   getAll:       (params?: any)           => api.get('/drivers', { params }),
   getStats:     ()                       => api.get('/drivers/stats'),
   getById:      (id: string)             => api.get(`/drivers/${id}`),
@@ -59,32 +49,29 @@ export const driversAPI = IS_MOCK ? mockDriversAPI : {
   changeStatus: (id: string, status: string) => api.patch(`/drivers/${id}/status`, { status }),
 };
 
-// ── Trips ────────────────────────────────────────────────────────────────────
-export const tripsAPI = IS_MOCK ? mockTripsAPI : {
-  getAll:   (params?: any)                          => api.get('/trips', { params }),
-  getStats: ()                                      => api.get('/trips/stats'),
-  getById:  (id: string)                            => api.get(`/trips/${id}`),
-  create:   (data: any)                             => api.post('/trips', data),
+export const tripsAPI = {
+  getAll:   (params?: any)                           => api.get('/trips', { params }),
+  getStats: ()                                       => api.get('/trips/stats'),
+  getById:  (id: string)                             => api.get(`/trips/${id}`),
+  create:   (data: any)                              => api.post('/trips', data),
   advance:  (id: string, status: string, extra: any) => api.patch(`/trips/${id}/status`, { status, ...extra }),
 };
 
-// ── Maintenance ──────────────────────────────────────────────────────────────
-export const maintenanceAPI = IS_MOCK ? mockMaintenanceAPI : {
+export const maintenanceAPI = {
   getAll:   (params?: any)              => api.get('/maintenance', { params }),
   getStats: ()                          => api.get('/maintenance/stats'),
   create:   (data: any)                 => api.post('/maintenance', data),
   close:    (id: string, data: any)     => api.patch(`/maintenance/${id}/close`, data),
 };
 
-// ── Fuel ─────────────────────────────────────────────────────────────────────
-export const fuelAPI = IS_MOCK ? mockFuelAPI : {
+export const fuelAPI = {
   getAll: (params?: any) => api.get('/fuel', { params }),
   log:    (data: any)    => api.post('/fuel', data),
 };
 
-// ── Reports ──────────────────────────────────────────────────────────────────
-export const reportsAPI = IS_MOCK ? mockReportsAPI : {
-  dashboard:      ()                 => api.get('/reports/dashboard'),
-  monthly:        (year?: number)    => api.get('/reports/monthly', { params: { year } }),
+export const reportsAPI = {
+  dashboard:      ()                  => api.get('/reports/dashboard'),
+  monthly:        (year?: number)     => api.get('/reports/monthly', { params: { year } }),
   vehicleReport:  (vehicleId: string) => api.get(`/reports/vehicle/${vehicleId}`),
 };
+
