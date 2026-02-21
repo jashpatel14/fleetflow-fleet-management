@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth, canAccess, ROLE_LABELS } from '../context/AuthContext';
 
-const ICON_SIZE  = 18;
+const ICON_SIZE = 18;
 const ICON_STROKE = 1.5;
 
 interface NavItem {
@@ -23,21 +23,21 @@ const makeItem = (
   roles: string[]
 ): NavItem => ({
   path, label, roles,
-  icon:       <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color="var(--text-3)" />,
+  icon: <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color="var(--text-3)" />,
   activeIcon: <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color="var(--primary)" />,
 });
 
 const NAV_ITEMS: NavItem[] = [
-  makeItem('/dashboard',   'Dashboard',        LayoutDashboard, ['FLEET_MANAGER','DISPATCHER','SAFETY_OFFICER','FINANCIAL_ANALYST']),
-  makeItem('/vehicles',    'Vehicles',         Truck,           ['FLEET_MANAGER','DISPATCHER']),
-  makeItem('/drivers',     'Driver Profiles',  User,            ['FLEET_MANAGER','SAFETY_OFFICER']),
-  makeItem('/trips',       'Trip Dispatcher',  Route,           ['FLEET_MANAGER','DISPATCHER']),
-  makeItem('/maintenance', 'Maintenance',      Wrench,          ['FLEET_MANAGER','DISPATCHER','SAFETY_OFFICER']),
-  makeItem('/fuel',        'Expense & Fuel',   Fuel,            ['FLEET_MANAGER','DISPATCHER']),
-  makeItem('/reports',     'Analytics',        BarChart3,       ['FLEET_MANAGER','FINANCIAL_ANALYST']),
+  makeItem('/dashboard', 'Dashboard', LayoutDashboard, ['FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER', 'FINANCIAL_ANALYST']),
+  makeItem('/vehicles', 'Vehicles', Truck, ['FLEET_MANAGER', 'DISPATCHER']),
+  makeItem('/drivers', 'Driver Profiles', User, ['FLEET_MANAGER', 'SAFETY_OFFICER']),
+  makeItem('/trips', 'Trip Dispatcher', Route, ['FLEET_MANAGER', 'DISPATCHER']),
+  makeItem('/maintenance', 'Maintenance', Wrench, ['FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER']),
+  makeItem('/fuel', 'Expense & Fuel', Fuel, ['FLEET_MANAGER', 'DISPATCHER']),
+  makeItem('/reports', 'Analytics', BarChart3, ['FLEET_MANAGER', 'FINANCIAL_ANALYST']),
 ];
 
-const Sidebar = ({ mobileOpen, onClose }: { mobileOpen?: boolean, onClose?: () => void }) => {
+const Sidebar = ({ mobileOpen, isCollapsed, onClose }: { mobileOpen?: boolean, isCollapsed?: boolean, onClose?: () => void }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -47,11 +47,11 @@ const Sidebar = ({ mobileOpen, onClose }: { mobileOpen?: boolean, onClose?: () =
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'FF';
 
   return (
-    <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
+    <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
       {/* Brand */}
       <div className="sidebar-brand">
         <div className="brand-mark">F</div>
-        <div>
+        <div className="brand-name-wrap">
           <div className="brand-name">FleetFlow</div>
           <div className="brand-version">Core v1.0</div>
         </div>
@@ -66,13 +66,14 @@ const Sidebar = ({ mobileOpen, onClose }: { mobileOpen?: boolean, onClose?: () =
             to={item.path}
             onClick={onClose}
             className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+            title={isCollapsed ? item.label : ''}
           >
             {({ isActive }) => (
               <>
                 <span className="nav-icon">
                   {isActive ? item.activeIcon : item.icon}
                 </span>
-                {item.label}
+                <span className="nav-text">{item.label}</span>
               </>
             )}
           </NavLink>
@@ -83,7 +84,7 @@ const Sidebar = ({ mobileOpen, onClose }: { mobileOpen?: boolean, onClose?: () =
       <div className="sidebar-footer">
         <div className="user-pill">
           <div className="user-avatar">{initials}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="user-info">
             <div className="user-name truncate">{user?.name}</div>
             <div className="user-role">{ROLE_LABELS[user?.role || '']}</div>
           </div>
@@ -91,7 +92,7 @@ const Sidebar = ({ mobileOpen, onClose }: { mobileOpen?: boolean, onClose?: () =
             onClick={handleLogout}
             className="btn btn-ghost btn-icon"
             title="Sign out"
-            style={{ padding: 6, color: 'var(--text-3)' }}
+            style={{ padding: 6, color: 'var(--text-3)', display: isCollapsed ? 'none' : 'flex' }}
           >
             <LogOut size={15} strokeWidth={ICON_STROKE} />
           </button>

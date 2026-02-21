@@ -16,15 +16,25 @@ const PAGE_META: Record<string, { title: string; sub: string }> = {
 const AppLayout = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  const handleToggle = () => {
+    if (window.innerWidth < 1024) {
+      setMobileOpen(!mobileOpen);
+    } else {
+      setIsCollapsed(!isCollapsed);
+    }
+  };
+
   const meta = PAGE_META[location.pathname] || { title: 'FleetFlow', sub: '' };
 
   return (
-    <div className="app-shell">
-      {mobileOpen && <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
-      <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
+    <div className={`app-shell ${mobileOpen ? 'mobile-nav-open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />
+      <Sidebar mobileOpen={mobileOpen} isCollapsed={isCollapsed} onClose={() => setMobileOpen(false)} />
       <div className="main-area">
         <header className="top-header">
-          <button className="mobile-menu-btn" onClick={() => setMobileOpen(true)}>
+          <button className="mobile-menu-btn" onClick={handleToggle}>
             <Menu size={20} strokeWidth={1.5} color="var(--text-1)" />
           </button>
           <div style={{ flex: 1 }}>
