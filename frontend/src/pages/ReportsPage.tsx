@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { reportsAPI, vehiclesAPI } from '../api/client';
-import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart } from 'lucide-react';
 
 const SW = 1.5;
 
 const ReportsPage = () => {
-  const [year, setYear]       = useState(new Date().getFullYear());
+  const [year, setYear] = useState(new Date().getFullYear());
   const [monthly, setMonthly] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [selVehicle, setSelVehicle] = useState('');
   const [vReport, setVReport] = useState<any>(null);
-  const [loading, setLoad]    = useState(true);
-  const [vLoad, setVLoad]     = useState(false);
+  const [loading, setLoad] = useState(true);
+  const [vLoad, setVLoad] = useState(false);
   const YEARS = Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - i);
 
   useEffect(() => {
     setLoad(true);
     Promise.all([reportsAPI.monthly(year), vehiclesAPI.getAll({ limit: 100 })])
       .then(([m, v]) => { setMonthly(m.data.report.months); setVehicles(v.data.vehicles); })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoad(false));
   }, [year]);
 
@@ -31,10 +31,10 @@ const ReportsPage = () => {
       .finally(() => setVLoad(false));
   }, [selVehicle]);
 
-  const totalRev  = monthly.reduce((s, m) => s + m.revenue, 0);
-  const totalExp  = monthly.reduce((s, m) => s + m.fuelCost + m.maintCost, 0);
-  const netPL     = totalRev - totalExp;
-  const maxRev    = Math.max(...monthly.map(m => m.revenue), 1);
+  const totalRev = monthly.reduce((s, m) => s + m.revenue, 0);
+  const totalExp = monthly.reduce((s, m) => s + m.fuelCost + m.maintCost, 0);
+  const netPL = totalRev - totalExp;
+  const maxRev = Math.max(...monthly.map(m => m.revenue), 1);
 
   if (loading) return <div className="spinner-wrap"><div className="spinner" /></div>;
 
@@ -67,7 +67,7 @@ const ReportsPage = () => {
         <div className="kpi-card">
           <div className="kpi-icon-row">
             <div className="kpi-icon-wrap" style={{ background: netPL >= 0 ? 'var(--green-bg)' : 'var(--red-bg)' }}>
-              <BarChart3 size={18} strokeWidth={SW} color={netPL >= 0 ? 'var(--green-text)' : 'var(--red-text)'} />
+              <BarChart size={18} strokeWidth={SW} color={netPL >= 0 ? 'var(--green-text)' : 'var(--red-text)'} />
             </div>
           </div>
           <div className="kpi-label">Net P&amp;L {year}</div>
@@ -139,14 +139,14 @@ const ReportsPage = () => {
             ) : vReport ? (
               <div>
                 {[
-                  { label: 'Completed Trips',  value: vReport.completedTrips },
-                  { label: 'Total Distance',   value: `${(vReport.totalDistance || 0).toLocaleString()} km` },
-                  { label: 'Total Revenue',    value: `₹${(vReport.totalRevenue || 0).toLocaleString()}`, color: 'var(--green-text)' },
-                  { label: 'Fuel Cost',        value: `₹${(vReport.totalFuelCost || 0).toLocaleString()}`, color: 'var(--red-text)' },
+                  { label: 'Completed Trips', value: vReport.completedTrips },
+                  { label: 'Total Distance', value: `${(vReport.totalDistance || 0).toLocaleString()} km` },
+                  { label: 'Total Revenue', value: `₹${(vReport.totalRevenue || 0).toLocaleString()}`, color: 'var(--green-text)' },
+                  { label: 'Fuel Cost', value: `₹${(vReport.totalFuelCost || 0).toLocaleString()}`, color: 'var(--red-text)' },
                   { label: 'Maintenance Cost', value: `₹${(vReport.totalMaintCost || 0).toLocaleString()}`, color: 'var(--red-text)' },
-                  { label: 'Net Profit',       value: `₹${(vReport.profit || 0).toLocaleString()}`, color: (vReport.profit || 0) >= 0 ? 'var(--green-text)' : 'var(--red-text)', bold: true },
-                  { label: 'Cost / km',        value: `₹${vReport.costPerKm}` },
-                  { label: 'Fuel Efficiency',  value: `${vReport.fuelEfficiency} km/L` },
+                  { label: 'Net Profit', value: `₹${(vReport.profit || 0).toLocaleString()}`, color: (vReport.profit || 0) >= 0 ? 'var(--green-text)' : 'var(--red-text)', bold: true },
+                  { label: 'Cost / km', value: `₹${vReport.costPerKm}` },
+                  { label: 'Fuel Efficiency', value: `${vReport.fuelEfficiency} km/L` },
                 ].map(row => (
                   <div key={row.label} style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -161,7 +161,7 @@ const ReportsPage = () => {
               </div>
             ) : (
               <div className="empty-state" style={{ padding: '28px 0' }}>
-                <div className="empty-icon"><BarChart3 size={30} strokeWidth={1} color="var(--text-4)" /></div>
+                <div className="empty-icon"><BarChart size={30} strokeWidth={1} color="var(--text-4)" /></div>
                 <div className="empty-desc">Select a vehicle to view its report</div>
               </div>
             )}
