@@ -4,20 +4,20 @@ import { useAuth } from '../context/AuthContext';
 import { Truck, Lock, Mail, AlertCircle } from 'lucide-react';
 
 const ROLES = [
-  { value: 'FLEET_MANAGER',     label: 'Fleet Manager' },
-  { value: 'DISPATCHER',        label: 'Dispatcher' },
-  { value: 'SAFETY_OFFICER',    label: 'Safety Officer' },
+  { value: 'FLEET_MANAGER', label: 'Fleet Manager' },
+  { value: 'DISPATCHER', label: 'Dispatcher' },
+  { value: 'SAFETY_OFFICER', label: 'Safety Officer' },
   { value: 'FINANCIAL_ANALYST', label: 'Financial Analyst' },
 ];
 
 const LoginPage = () => {
   const { login } = useAuth();
-  const navigate  = useNavigate();
-  const [tab, setTab]       = useState<'login' | 'register'>('login');
-  const [email, setEmail]   = useState('');
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
-  const [error, setError]   = useState('');
-  const [loading, setLoad]  = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoad] = useState(false);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -113,23 +113,7 @@ const LoginPage = () => {
                   {loading ? 'Signing in...' : 'Sign In'}
                 </button>
 
-                {/* Demo hint */}
-                <div style={{
-                  marginTop: 16,
-                  padding: '12px 14px',
-                  background: 'var(--bg)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--r)',
-                  fontSize: 12,
-                  color: 'var(--text-3)',
-                  lineHeight: 1.7,
-                }}>
-                  <span style={{ fontWeight: 600, color: 'var(--text-2)' }}>Demo credentials</span>
-                  {' '}— password: <code style={{ background: 'var(--border-light)', padding: '1px 5px', borderRadius: 4, fontFamily: 'monospace' }}>FleetFlow@123</code>
-                  <br />
-                  manager@fleetflow.com · dispatcher@fleetflow.com<br />
-                  safety@fleetflow.com · analyst@fleetflow.com
-                </div>
+
               </form>
             ) : (
               <RegisterForm onSuccess={() => setTab('login')} roles={ROLES} />
