@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { reportsAPI, vehiclesAPI } from '../api/client';
+import { Fuel, TrendingUp, Activity, ExternalLink } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label
 } from 'recharts';
@@ -38,17 +39,40 @@ const ReportsPage = () => {
     <div>
       {/* Annual KPIs */}
       <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-        <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
-          <div className="kpi-label" style={{ color: 'var(--green)' }}>Total Fuel Cost</div>
-          <div className="kpi-value" style={{ color: 'var(--green)' }}>{totalFuelStr}</div>
+        <div className="kpi-card" style={{ border: '1px solid var(--border)' }}>
+          <div className="kpi-icon-row">
+            <div className="kpi-icon-wrap" style={{ background: 'var(--red-bg)' }}>
+              <Fuel size={18} strokeWidth={1.5} color="var(--red)" />
+            </div>
+            <ExternalLink size={14} color="var(--text-4)" />
+          </div>
+          <div className="kpi-label">Total Fuel Cost</div>
+          <div className="kpi-value">{totalFuelStr}</div>
+          <div className="kpi-sub">Est. for {year}</div>
         </div>
-        <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
-          <div className="kpi-label" style={{ color: 'var(--green)' }}>Fleet ROI</div>
-          <div className="kpi-value" style={{ color: 'var(--green)' }}>{roi}</div>
+
+        <div className="kpi-card" style={{ border: '1px solid var(--border)' }}>
+          <div className="kpi-icon-row">
+            <div className="kpi-icon-wrap" style={{ background: 'var(--blue-bg)' }}>
+              <TrendingUp size={18} strokeWidth={1.5} color="var(--blue)" />
+            </div>
+            <ExternalLink size={14} color="var(--text-4)" />
+          </div>
+          <div className="kpi-label">Fleet ROI</div>
+          <div className="kpi-value">{roi}</div>
+          <div className="kpi-sub">Returns on Ops</div>
         </div>
-        <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
-          <div className="kpi-label" style={{ color: 'var(--green)' }}>Utilization Rate</div>
-          <div className="kpi-value" style={{ color: 'var(--green)' }}>{util}</div>
+
+        <div className="kpi-card" style={{ border: '1px solid var(--border)' }}>
+          <div className="kpi-icon-row">
+            <div className="kpi-icon-wrap" style={{ background: 'var(--green-bg)' }}>
+              <Activity size={18} strokeWidth={1.5} color="var(--green)" />
+            </div>
+            <ExternalLink size={14} color="var(--text-4)" />
+          </div>
+          <div className="kpi-label">Utilization Rate</div>
+          <div className="kpi-value">{util}</div>
+          <div className="kpi-sub">Active fleet usage</div>
         </div>
       </div>
 
