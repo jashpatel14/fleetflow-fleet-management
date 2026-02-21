@@ -1,14 +1,253 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// FleetFlow Core — Prisma Schema
+// Database: PostgreSQL
+// All business rules enforced via constraints + app-level validation
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum Role {
+  FLEET_MANAGER
+  DISPATCHER
+  SAFETY_OFFICER
+  FINANCIAL_ANALYST
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  ON_TRIP
+  IN_SHOP
+  RETIRED
+}
+
+enum VehicleType {
+  MINI_TRUCK
+  TRUCK
+  TRAILER
+  TANKER
+  CONTAINER
+  VAN
+}
+
+enum DriverStatus {
+  ON_DUTY
+  OFF_DUTY
+  SUSPENDED
+}
+
+enum TripStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  DISPATCHED
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+}
+
+enum MaintenanceStatus {
+  OPEN
+  CLOSED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USERS — Authentication & Role-Based Access
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(DISPATCHER)
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VEHICLES — Asset Registry with Lifecycle State Machine
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Vehicle {
+  id               String        @id @default(cuid())
+  licensePlate     String        @unique
+  make             String        // e.g. TATA, Ashok Leyland
+  model            String
+  year             Int
+  type             VehicleType
+  capacityTons     Float         // Max payload in tons — must be > 0
+  currentOdometer  Float         @default(0) // Cannot decrease
+  status           VehicleStatus @default(AVAILABLE)
+  acquisitionCost  Float         @default(0)
+  isActive         Boolean       @default(true)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  trips            Trip[]
+  maintenanceLogs  MaintenanceLog[]
+  fuelLogs         FuelLog[]
+
+  @@map("vehicles")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DRIVERS — Profile + License + Status
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Driver {
+  id             String       @id @default(cuid())
+  name           String
+  email          String?      @unique
+  phone          String
+  licenseNumber  String       @unique
+  licenseExpiry  DateTime     // Checked on every assignment
+  vehicleCategory VehicleType // Must match assigned vehicle type
+  status         DriverStatus @default(OFF_DUTY)
+  safetyScore    Float        @default(100) // Decreases on incidents
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  trips          Trip[]
+
+  @@map("drivers")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRIPS — Core Operational Entity with Full State Machine
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Trip {
+  id              String     @id @default(cuid())
+  tripNumber      String     @unique // Auto-generated e.g. TRP-2026-0001
+
+  // Assignment
+  vehicle         Vehicle    @relation(fields: [vehicleId], references: [id])
+  vehicleId       String
+  driver          Driver     @relation(fields: [driverId], references: [id])
+  driverId        String
+
+  // Route
+  origin          String
+  destination     String
+
+  // Cargo
+  cargoDescription String?
+  cargoWeightTons  Float     // Must be <= vehicle.capacityTons
+
+  // Odometer — enforced: endOdometer > startOdometer
+  startOdometer   Float?
+  endOdometer     Float?
+
+  // Financial
+  revenue         Float      @default(0)
+  miscExpenses    Float      @default(0)
+
+  // Status (state machine)
+  status          TripStatus @default(DRAFT)
+
+  // Timestamps per stage
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  dispatchedAt    DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  fuelLogs        FuelLog[]
+
+  @@map("trips")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAINTENANCE LOGS — Vehicle Health Tracking
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MaintenanceLog {
+  id          String            @id @default(cuid())
+
+  vehicle     Vehicle           @relation(fields: [vehicleId], references: [id])
+  vehicleId   String
+
+  type        MaintenanceType
+  status      MaintenanceStatus @default(OPEN)
+
+  description String
+  cost        Float             @default(0)
+
+  openedAt    DateTime          @default(now())
+  closedAt    DateTime?         // Set when status → CLOSED
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("maintenance_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FUEL LOGS — Fuel & Expense Tracking per Trip
+// ─────────────────────────────────────────────────────────────────────────────
+
+model FuelLog {
+  id        String   @id @default(cuid())
+
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+  vehicleId String
+
+  trip      Trip?    @relation(fields: [tripId], references: [id])
+  tripId    String?
+
+  liters    Float    // Must be > 0
+  costPerLiter Float
+  totalCost Float    // liters * costPerLiter
+
+  loggedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("fuel_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIT LOGS — Every important action tracked
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+
+  action    String   // e.g. "TRIP_DISPATCHED", "VEHICLE_RETIRED"
+  entity    String   // e.g. "Trip", "Vehicle"
+  entityId  String
+  detail    String?  // JSON string with before/after state
+
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
 }
