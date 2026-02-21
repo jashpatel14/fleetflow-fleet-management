@@ -4,6 +4,8 @@ import { Fuel, TrendingUp, Activity, ExternalLink } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label
 } from 'recharts';
+import * as XLSX from 'xlsx';
+import { Download } from 'lucide-react';
 
 const ReportsPage = () => {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -35,8 +37,53 @@ const ReportsPage = () => {
     .slice(0, 5)
     .map(v => ({ name: v.licensePlate.slice(-4), cost: v.acquisitionCost }));
 
+  const exportToExcel = () => {
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Financial Summary
+    const financialData = monthly.map(m => ({
+      Month: m.monthName,
+      'Revenue (₹)': m.revenue,
+      'Fuel Cost (₹)': m.fuelCost,
+      'Maintenance Cost (₹)': m.maintCost,
+      'Net Profit (₹)': m.netPL
+    }));
+    const wsFinancial = XLSX.utils.json_to_sheet(financialData);
+    XLSX.utils.book_append_sheet(wb, wsFinancial, "Financial Summary");
+
+    // Sheet 2: Vehicle Overview
+    const vehicleData = vehicles.map(v => ({
+      'License Plate': v.licensePlate,
+      Make: v.make,
+      Status: v.status,
+      'Acquisition Cost (₹)': v.acquisitionCost
+    }));
+    const wsVehicles = XLSX.utils.json_to_sheet(vehicleData);
+    XLSX.utils.book_append_sheet(wb, wsVehicles, "Vehicles");
+
+    // Sheet 3: Key Metrics
+    const metricData = [
+      { Metric: 'Total Revenue', Value: totalRev },
+      { Metric: 'Total Expenses', Value: totalExp },
+      { Metric: 'Net Profit/Loss', Value: netPL },
+      { Metric: 'Fleet ROI', Value: roi },
+      { Metric: 'Utilization Rate', Value: util },
+      { Metric: 'Report Year', Value: year }
+    ];
+    const wsMetrics = XLSX.utils.json_to_sheet(metricData);
+    XLSX.utils.book_append_sheet(wb, wsMetrics, "Key Performance Metrics");
+
+    XLSX.writeFile(wb, `FleetFlow_Report_${year}.xlsx`);
+  };
+
   return (
     <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Fleet Analytics</h2>
+        <button className="btn btn-primary" onClick={exportToExcel} style={{ gap: 8 }}>
+          <Download size={16} strokeWidth={2} /> Export to Excel
+        </button>
+      </div>
       {/* Annual KPIs */}
       <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
         <div className="kpi-card" style={{ border: '1px solid var(--border)' }}>

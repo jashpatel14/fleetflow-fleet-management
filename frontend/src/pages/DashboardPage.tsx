@@ -125,7 +125,26 @@ const DashboardPage = () => {
         </div>
       )}
 
-      {/* 2. Primary Fleet KPIs */}
+      {/* 2. Primary Actions (Prominent) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+        {[
+          { to: '/trips', icon: <Navigation size={20} strokeWidth={SW} color="var(--primary)" />, title: 'Dispatch Trip', desc: 'Assign vehicle & driver' },
+          { to: '/vehicles', icon: <Truck size={20} strokeWidth={SW} color="#16A34A" />, title: 'Add Vehicle', desc: 'Register fleet asset' },
+          { to: '/maintenance', icon: <Wrench size={20} strokeWidth={SW} color="var(--orange-text)" />, title: 'Log Maintenance', desc: 'Record service entry' },
+        ].map(a => (
+          <Link key={a.to} to={a.to} className="card" style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14, transition: 'box-shadow 0.2s ease' }}>
+            <div style={{ width: 38, height: 38, borderRadius: 8, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {a.icon}
+            </div>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>{a.title}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{a.desc}</div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* 3. Fleet KPIs */}
       <div className="kpi-grid">
         <KpiCard icon={<Truck />} label="Total Fleet" value={data.vehicles.total} sub={`${util}% utilization`} iconBg="#EFF6FF" iconColor="#2563EB" />
         <KpiCard icon={<CheckCircle2 />} label="Available" value={data.vehicles.available} iconBg="#F0FDF4" iconColor="#16A34A" />
@@ -135,45 +154,48 @@ const DashboardPage = () => {
         <KpiCard icon={<TrendingUp />} label="Total Revenue" value={`₹${(data.totalRevenue / 100000).toFixed(1)}L`} iconBg="#F0FDF4" iconColor="#16A34A" />
       </div>
 
-      {/* Recent Trips */}
+      {/* 4. Search & Filter Bar (Relocated for Visibility) */}
+      <div className="toolbar" style={{ margin: 0, padding: '4px 0' }}>
+        <div className="search-wrap" style={{ maxWidth: 400, flex: 1 }}>
+          <Search size={14} strokeWidth={SW} className="search-icon-pos" />
+          <input
+            className="search-input"
+            placeholder="Search trips, vehicles, or drivers..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          className="filter-select"
+          value={statusF}
+          onChange={e => setStatusF(e.target.value)}
+          style={{ width: 140 }}
+        >
+          <option value="">All Status</option>
+          {['DRAFT', 'SUBMITTED', 'APPROVED', 'DISPATCHED', 'COMPLETED', 'CANCELLED'].map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <div style={{ flex: 1 }} />
+      </div>
+
+      {/* 5. Recent Trips Table */}
       <div className="card">
         <div className="card-header">
           <div>
-            <div className="card-title">Recent Trips</div>
-            <div className="card-subtitle">Latest fleet activity</div>
+            <div className="card-title">Recent Activity</div>
+            <div className="card-subtitle">Latest trips and updates</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div className="search-wrap" style={{ width: 220 }}>
-              <Search size={14} strokeWidth={SW} className="search-icon-pos" />
-              <input
-                className="search-input"
-                placeholder="Search trips..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-            <select
-              className="filter-select"
-              value={statusF}
-              onChange={e => setStatusF(e.target.value)}
-              style={{ padding: '7px 12px', fontSize: 13 }}
-            >
-              <option value="">All Status</option>
-              {['DRAFT', 'SUBMITTED', 'APPROVED', 'DISPATCHED', 'COMPLETED', 'CANCELLED'].map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <Link to="/trips" className="btn btn-secondary btn-sm">
-              View all <ChevronRight size={13} strokeWidth={SW} />
-            </Link>
-          </div>
+          <Link to="/trips" className="btn btn-secondary btn-sm">
+            View all <ChevronRight size={13} strokeWidth={SW} />
+          </Link>
         </div>
         <div className="table-scroll">
           {recentTrips.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon"><Truck size={36} strokeWidth={1} color="var(--text-4)" /></div>
-              <div className="empty-title">No trips yet</div>
-              <div className="empty-desc">Create your first trip to see it here</div>
+              <div className="empty-title">No matching trips</div>
+              <div className="empty-desc">Try adjusting your search or filters</div>
             </div>
           ) : (
             <table>
@@ -203,25 +225,6 @@ const DashboardPage = () => {
             </table>
           )}
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 16 }}>
-        {[
-          { to: '/trips', icon: <Navigation size={20} strokeWidth={SW} color="var(--primary)" />, title: 'Dispatch Trip', desc: 'Assign vehicle & driver' },
-          { to: '/vehicles', icon: <Truck size={20} strokeWidth={SW} color="#16A34A" />, title: 'Add Vehicle', desc: 'Register fleet asset' },
-          { to: '/maintenance', icon: <Wrench size={20} strokeWidth={SW} color="var(--orange-text)" />, title: 'Log Maintenance', desc: 'Record service entry' },
-        ].map(a => (
-          <Link key={a.to} to={a.to} className="card" style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14, transition: 'box-shadow 0.2s ease' }}>
-            <div style={{ width: 38, height: 38, borderRadius: 8, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {a.icon}
-            </div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>{a.title}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{a.desc}</div>
-            </div>
-          </Link>
-        ))}
       </div>
     </div>
   );
