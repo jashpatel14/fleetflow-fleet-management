@@ -1,22 +1,23 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { driversAPI } from '../api/client';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAuth, canAccess } from '../context/AuthContext';
 import { Search, Plus, User, AlertCircle, AlertTriangle } from 'lucide-react';
 
 const SW = 1.5;
-const VEHICLE_TYPES = ['MINI_TRUCK','TRUCK','TRAILER','TANKER','CONTAINER','VAN'];
+const VEHICLE_TYPES = ['MINI_TRUCK', 'TRUCK', 'TRAILER', 'TANKER', 'CONTAINER', 'VAN'];
 
 const DriversPage = () => {
   const { user } = useAuth();
   const [drivers, setDrivers] = useState<any[]>([]);
-  const [stats, setStats]     = useState<any>(null);
-  const [loading, setLoad]    = useState(true);
-  const [search, setSearch]   = useState('');
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoad] = useState(true);
+  const [search, setSearch] = useState('');
   const [statusF, setStatusF] = useState('');
-  const [page, setPage]       = useState(1);
-  const [total, setTotal]     = useState(0);
-  const [modal, setModal]     = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const LIMIT = 10;
 
@@ -44,10 +45,10 @@ const DriversPage = () => {
       {stats && (
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(5,1fr)' }}>
           {[
-            { label: 'Total Drivers',  v: stats.total,            color: 'var(--primary)' },
-            { label: 'On Duty',        v: stats.onDuty,           color: 'var(--green-text)' },
-            { label: 'Off Duty',       v: stats.offDuty,          color: 'var(--orange-text)' },
-            { label: 'Suspended',      v: stats.suspended,        color: 'var(--red-text)' },
+            { label: 'Total Drivers', v: stats.total, color: 'var(--primary)' },
+            { label: 'On Duty', v: stats.onDuty, color: 'var(--green-text)' },
+            { label: 'Off Duty', v: stats.offDuty, color: 'var(--orange-text)' },
+            { label: 'Suspended', v: stats.suspended, color: 'var(--red-text)' },
             { label: 'License Alerts', v: stats.expiringLicenses, color: 'var(--yellow-text)' },
           ].map(s => (
             <div key={s.label} className="kpi-card" style={{ padding: '14px 16px' }}>
@@ -105,7 +106,7 @@ const DriversPage = () => {
                       <span style={{
                         color: d.isLicenseExpired ? 'var(--red-text)'
                           : d.licenseExpiresInDays < 30 ? 'var(--orange-text)'
-                          : 'var(--text-1)',
+                            : 'var(--text-1)',
                         fontWeight: d.licenseExpiresInDays < 60 ? 600 : 400,
                         display: 'flex', alignItems: 'center', gap: 4,
                       }}>
@@ -113,7 +114,7 @@ const DriversPage = () => {
                         {new Date(d.licenseExpiry).toLocaleDateString('en-IN')}
                       </span>
                     </td>
-                    <td className="text-muted text-sm">{d.vehicleCategory.replace('_',' ')}</td>
+                    <td className="text-muted text-sm">{d.vehicleCategory.replace('_', ' ')}</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         <div style={{ width: 56, height: 5, background: 'var(--border)', borderRadius: 3 }}>
@@ -147,10 +148,10 @@ const DriversPage = () => {
         </div>
         {total > LIMIT && (
           <div className="pagination">
-            <span className="pagination-info">Showing {(page-1)*LIMIT+1}–{Math.min(page*LIMIT, total)} of {total}</span>
+            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
             <div className="pagination-btns">
-              <button className="page-btn" disabled={page===1} onClick={() => setPage(p=>p-1)}>‹</button>
-              <button className="page-btn" disabled={page*LIMIT>=total} onClick={() => setPage(p=>p+1)}>›</button>
+              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
             </div>
           </div>
         )}
@@ -221,7 +222,7 @@ const DriverModal = ({ driver, onClose, onSave }: any) => {
             <div className="form-group">
               <label className="form-label">Vehicle Category <span className="req">*</span></label>
               <select className="form-select" value={form.vehicleCategory} onChange={set('vehicleCategory')}>
-                {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t.replace('_',' ')}</option>)}
+                {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
               </select>
             </div>
           </div>

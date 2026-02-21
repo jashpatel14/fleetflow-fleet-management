@@ -1,15 +1,16 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { fuelAPI, vehiclesAPI, tripsAPI } from '../api/client';
 import { Plus, Fuel, AlertCircle } from 'lucide-react';
 
 const SW = 1.5;
 
 const FuelPage = () => {
-  const [logs, setLogs]     = useState<any[]>([]);
-  const [loading, setLoad]  = useState(true);
-  const [page, setPage]     = useState(1);
-  const [total, setTotal]   = useState(0);
-  const [modal, setModal]   = useState(false);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoad] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [modal, setModal] = useState(false);
   const LIMIT = 10;
 
   const load = async () => {
@@ -21,7 +22,7 @@ const FuelPage = () => {
   };
   useEffect(() => { load(); }, [page]);
 
-  const totalCost  = logs.reduce((s, l) => s + l.totalCost, 0);
+  const totalCost = logs.reduce((s, l) => s + l.totalCost, 0);
   const totalLitre = logs.reduce((s, l) => s + l.liters, 0);
 
   return (
@@ -90,10 +91,10 @@ const FuelPage = () => {
         </div>
         {total > LIMIT && (
           <div className="pagination">
-            <span className="pagination-info">Showing {(page-1)*LIMIT+1}–{Math.min(page*LIMIT, total)} of {total}</span>
+            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
             <div className="pagination-btns">
-              <button className="page-btn" disabled={page===1} onClick={() => setPage(p=>p-1)}>‹</button>
-              <button className="page-btn" disabled={page*LIMIT>=total} onClick={() => setPage(p=>p+1)}>›</button>
+              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
             </div>
           </div>
         )}
@@ -107,9 +108,9 @@ const FuelPage = () => {
 const LogFuelModal = ({ onClose, onSave }: any) => {
   const [form, setForm] = useState({ vehicleId: '', tripId: '', liters: '', costPerLiter: '' });
   const [vehicles, setVehicles] = useState<any[]>([]);
-  const [trips, setTrips]       = useState<any[]>([]);
-  const [error, setError]       = useState('');
-  const [loading, setLoad]      = useState(false);
+  const [trips, setTrips] = useState<any[]>([]);
+  const [error, setError] = useState('');
+  const [loading, setLoad] = useState(false);
   const set = (k: string) => (e: any) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   useEffect(() => {

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { authAPI } from '../api/client';
 
 interface User {
@@ -19,14 +20,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser]       = useState<User | null>(null);
-  const [token, setToken]     = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Rehydrate from localStorage on mount
   useEffect(() => {
     const storedToken = localStorage.getItem('ff_token');
-    const storedUser  = localStorage.getItem('ff_user');
+    const storedUser = localStorage.getItem('ff_user');
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     const { data } = await authAPI.login({ email, password });
     localStorage.setItem('ff_token', data.token);
-    localStorage.setItem('ff_user',  JSON.stringify(data.user));
+    localStorage.setItem('ff_user', JSON.stringify(data.user));
     setToken(data.token);
     setUser(data.user);
   };
@@ -64,9 +65,9 @@ export const useAuth = () => {
 
 // Role helpers
 export const ROLE_LABELS: Record<string, string> = {
-  FLEET_MANAGER:     'Fleet Manager',
-  DISPATCHER:        'Dispatcher',
-  SAFETY_OFFICER:    'Safety Officer',
+  FLEET_MANAGER: 'Fleet Manager',
+  DISPATCHER: 'Dispatcher',
+  SAFETY_OFFICER: 'Safety Officer',
   FINANCIAL_ANALYST: 'Financial Analyst',
 };
 

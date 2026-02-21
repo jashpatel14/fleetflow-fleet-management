@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 
 const PAGE_META: Record<string, { title: string; sub: string }> = {
-  '/dashboard':   { title: 'Dashboard',         sub: 'Fleet overview and live KPIs' },
-  '/vehicles':    { title: 'Vehicle Registry',  sub: 'Manage your fleet assets' },
-  '/drivers':     { title: 'Driver Profiles',   sub: 'Driver compliance and performance' },
-  '/trips':       { title: 'Trip Dispatcher',   sub: 'Manage and track trips' },
-  '/maintenance': { title: 'Maintenance Logs',  sub: 'Service and repair tracking' },
-  '/fuel':        { title: 'Expense & Fuel',    sub: 'Fuel cost and expense logging' },
-  '/reports':     { title: 'Analytics',         sub: 'Financial and operational reports' },
+  '/dashboard': { title: 'Dashboard', sub: 'Fleet overview and live KPIs' },
+  '/vehicles': { title: 'Vehicle Registry', sub: 'Manage your fleet assets' },
+  '/drivers': { title: 'Driver Profiles', sub: 'Driver compliance and performance' },
+  '/trips': { title: 'Trip Dispatcher', sub: 'Manage and track trips' },
+  '/maintenance': { title: 'Maintenance Logs', sub: 'Service and repair tracking' },
+  '/fuel': { title: 'Expense & Fuel', sub: 'Fuel cost and expense logging' },
+  '/reports': { title: 'Analytics', sub: 'Financial and operational reports' },
 };
 
 const AppLayout = () => {

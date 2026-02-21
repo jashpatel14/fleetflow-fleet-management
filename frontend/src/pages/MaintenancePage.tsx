@@ -1,4 +1,5 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { maintenanceAPI, vehiclesAPI } from '../api/client';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAuth, canAccess } from '../context/AuthContext';
@@ -8,12 +9,12 @@ const SW = 1.5;
 
 const MaintenancePage = () => {
   const { user } = useAuth();
-  const [logs, setLogs]       = useState<any[]>([]);
-  const [stats, setStats]     = useState<any>(null);
-  const [loading, setLoad]    = useState(true);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoad] = useState(true);
   const [statusF, setStatusF] = useState('');
-  const [page, setPage]       = useState(1);
-  const [total, setTotal]     = useState(0);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [closing, setClosing] = useState<any>(null);
   const LIMIT = 10;
@@ -30,18 +31,18 @@ const MaintenancePage = () => {
   };
   useEffect(() => { load(); }, [statusF, page]);
 
-  const canManage  = canAccess(user?.role, ['FLEET_MANAGER','SAFETY_OFFICER','DISPATCHER']);
-  const canClose   = canAccess(user?.role, ['FLEET_MANAGER','SAFETY_OFFICER']);
+  const canManage = canAccess(user?.role, ['FLEET_MANAGER', 'SAFETY_OFFICER', 'DISPATCHER']);
+  const canClose = canAccess(user?.role, ['FLEET_MANAGER', 'SAFETY_OFFICER']);
 
   return (
     <div>
       {stats && (
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
           {[
-            { label: 'Total Records', v: stats.total,     color: 'var(--primary)' },
-            { label: 'Open',          v: stats.open,      color: 'var(--orange-text)' },
-            { label: 'Closed',        v: stats.closed,    color: 'var(--green-text)' },
-            { label: 'Total Cost',    v: `₹${((stats.totalCost||0)/1000).toFixed(0)}K`, color: 'var(--red-text)' },
+            { label: 'Total Records', v: stats.total, color: 'var(--primary)' },
+            { label: 'Open', v: stats.open, color: 'var(--orange-text)' },
+            { label: 'Closed', v: stats.closed, color: 'var(--green-text)' },
+            { label: 'Total Cost', v: `₹${((stats.totalCost || 0) / 1000).toFixed(0)}K`, color: 'var(--red-text)' },
           ].map(s => (
             <div key={s.label} className="kpi-card" style={{ padding: '14px 16px' }}>
               <div className="kpi-label">{s.label}</div>
@@ -117,17 +118,17 @@ const MaintenancePage = () => {
         </div>
         {total > LIMIT && (
           <div className="pagination">
-            <span className="pagination-info">Showing {(page-1)*LIMIT+1}–{Math.min(page*LIMIT, total)} of {total}</span>
+            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
             <div className="pagination-btns">
-              <button className="page-btn" disabled={page===1} onClick={() => setPage(p=>p-1)}>‹</button>
-              <button className="page-btn" disabled={page*LIMIT>=total} onClick={() => setPage(p=>p+1)}>›</button>
+              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
             </div>
           </div>
         )}
       </div>
 
       {showCreate && <CreateMaintenanceModal onClose={() => setShowCreate(false)} onSave={() => { setShowCreate(false); load(); }} />}
-      {closing    && <CloseMaintenanceModal  log={closing}  onClose={() => setClosing(null)}  onSave={() => { setClosing(null);  load(); }} />}
+      {closing && <CloseMaintenanceModal log={closing} onClose={() => setClosing(null)} onSave={() => { setClosing(null); load(); }} />}
     </div>
   );
 };
@@ -195,7 +196,7 @@ const CreateMaintenanceModal = ({ onClose, onSave }: any) => {
 };
 
 const CloseMaintenanceModal = ({ log, onClose, onSave }: any) => {
-  const [cost, setCost]   = useState(log.cost || '');
+  const [cost, setCost] = useState(log.cost || '');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoad] = useState(false);

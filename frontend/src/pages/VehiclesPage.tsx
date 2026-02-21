@@ -1,23 +1,24 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { vehiclesAPI } from '../api/client';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAuth, canAccess } from '../context/AuthContext';
 import { Search, Plus, Truck, AlertCircle } from 'lucide-react';
 
 const SW = 1.5;
-const VEHICLE_TYPES = ['MINI_TRUCK','TRUCK','TRAILER','TANKER','CONTAINER','VAN'];
-const STATUSES = ['AVAILABLE','ON_TRIP','IN_SHOP','RETIRED'];
+const VEHICLE_TYPES = ['MINI_TRUCK', 'TRUCK', 'TRAILER', 'TANKER', 'CONTAINER', 'VAN'];
+const STATUSES = ['AVAILABLE', 'ON_TRIP', 'IN_SHOP', 'RETIRED'];
 
 const VehiclesPage = () => {
   const { user } = useAuth();
   const [vehicles, setVehicles] = useState<any[]>([]);
-  const [stats, setStats]   = useState<any>(null);
-  const [loading, setLoad]  = useState(true);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoad] = useState(true);
   const [search, setSearch] = useState('');
   const [statusF, setStatusF] = useState('');
-  const [page, setPage]     = useState(1);
-  const [total, setTotal]   = useState(0);
-  const [modal, setModal]   = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const LIMIT = 10;
 
@@ -46,11 +47,11 @@ const VehiclesPage = () => {
       {stats && (
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(5,1fr)' }}>
           {[
-            { label: 'Total',     v: stats.total,     color: 'var(--primary)' },
+            { label: 'Total', v: stats.total, color: 'var(--primary)' },
             { label: 'Available', v: stats.available, color: 'var(--green-text)' },
-            { label: 'On Trip',   v: stats.onTrip,    color: 'var(--blue-text)' },
-            { label: 'In Shop',   v: stats.inShop,    color: 'var(--orange-text)' },
-            { label: 'Retired',   v: stats.retired,   color: 'var(--text-3)' },
+            { label: 'On Trip', v: stats.onTrip, color: 'var(--blue-text)' },
+            { label: 'In Shop', v: stats.inShop, color: 'var(--orange-text)' },
+            { label: 'Retired', v: stats.retired, color: 'var(--text-3)' },
           ].map(s => (
             <div key={s.label} className="kpi-card" style={{ padding: '14px 16px' }}>
               <div className="kpi-label">{s.label}</div>
@@ -69,7 +70,7 @@ const VehiclesPage = () => {
         <select className="filter-select" value={statusF}
           onChange={e => { setStatusF(e.target.value); setPage(1); }}>
           <option value="">All statuses</option>
-          {STATUSES.map(s => <option key={s} value={s}>{s.replace('_',' ')}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
         </select>
         {canManage && (
           <button className="btn btn-primary" onClick={() => { setEditing(null); setModal(true); }}>
@@ -103,7 +104,7 @@ const VehiclesPage = () => {
                       {v.make} {v.model}
                       <span className="text-muted text-sm"> · {v.year}</span>
                     </td>
-                    <td className="text-muted text-sm">{v.type.replace('_',' ')}</td>
+                    <td className="text-muted text-sm">{v.type.replace('_', ' ')}</td>
                     <td className="right mono">{v.capacityTons}t</td>
                     <td className="right mono">{v.currentOdometer.toLocaleString()} km</td>
                     <td><StatusBadge type="vehicle" status={v.status} /></td>
@@ -129,10 +130,10 @@ const VehiclesPage = () => {
         </div>
         {total > LIMIT && (
           <div className="pagination">
-            <span className="pagination-info">Showing {(page-1)*LIMIT+1}–{Math.min(page*LIMIT, total)} of {total}</span>
+            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
             <div className="pagination-btns">
-              <button className="page-btn" disabled={page===1} onClick={() => setPage(p=>p-1)}>‹</button>
-              <button className="page-btn" disabled={page*LIMIT>=total} onClick={() => setPage(p=>p+1)}>›</button>
+              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
             </div>
           </div>
         )}
@@ -184,7 +185,7 @@ const VehicleModal = ({ vehicle, onClose, onSave }: any) => {
               <div className="form-group">
                 <label className="form-label">Type <span className="req">*</span></label>
                 <select className="form-select" value={form.type} onChange={set('type')}>
-                  {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t.replace('_',' ')}</option>)}
+                  {VEHICLE_TYPES.map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
                 </select>
               </div>
             </div>

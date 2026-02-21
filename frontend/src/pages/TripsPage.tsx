@@ -1,4 +1,5 @@
-import React, { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { tripsAPI, vehiclesAPI, driversAPI } from '../api/client';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAuth, canAccess } from '../context/AuthContext';
@@ -13,13 +14,13 @@ const ACTION_LABEL: Record<string, string> = { SUBMITTED: 'Submit', APPROVED: 'A
 
 const TripsPage = () => {
   const { user } = useAuth();
-  const [trips, setTrips]     = useState<any[]>([]);
-  const [stats, setStats]     = useState<any>(null);
-  const [loading, setLoad]    = useState(true);
+  const [trips, setTrips] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoad] = useState(true);
   const [statusF, setStatusF] = useState('');
-  const [search, setSearch]   = useState('');
-  const [page, setPage]       = useState(1);
-  const [total, setTotal]     = useState(0);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [completing, setCompleting] = useState<any>(null);
   const LIMIT = 10;
@@ -56,14 +57,15 @@ const TripsPage = () => {
     <div>
       {stats && (
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(6,1fr)' }}>
-          {(['draft','submitted','approved','dispatched','completed','cancelled'] as const).map(key => (
+          {(['draft', 'submitted', 'approved', 'dispatched', 'completed', 'cancelled'] as const).map(key => (
             <div key={key} className="kpi-card" style={{ padding: '14px 16px', cursor: 'pointer' }}
               onClick={() => { setStatusF(key.toUpperCase()); setPage(1); }}>
               <div className="kpi-label" style={{ textTransform: 'capitalize' }}>{key}</div>
-              <div className="kpi-value" style={{ fontSize: 22, color:
-                key === 'completed' ? 'var(--green-text)' : key === 'dispatched' ? 'var(--blue-text)'
-                : key === 'cancelled' ? 'var(--red-text)' : key === 'approved' ? '#6D28D9'
-                : key === 'submitted' ? 'var(--yellow-text)' : 'var(--text-3)'
+              <div className="kpi-value" style={{
+                fontSize: 22, color:
+                  key === 'completed' ? 'var(--green-text)' : key === 'dispatched' ? 'var(--blue-text)'
+                    : key === 'cancelled' ? 'var(--red-text)' : key === 'approved' ? '#6D28D9'
+                      : key === 'submitted' ? 'var(--yellow-text)' : 'var(--text-3)'
               }}>{stats[key] || 0}</div>
             </div>
           ))}
@@ -79,7 +81,7 @@ const TripsPage = () => {
         <select className="filter-select" value={statusF}
           onChange={e => { setStatusF(e.target.value); setPage(1); }}>
           <option value="">All statuses</option>
-          {['DRAFT','SUBMITTED','APPROVED','DISPATCHED','COMPLETED','CANCELLED'].map(s =>
+          {['DRAFT', 'SUBMITTED', 'APPROVED', 'DISPATCHED', 'COMPLETED', 'CANCELLED'].map(s =>
             <option key={s} value={s}>{s}</option>)}
         </select>
         {canManage && (
@@ -129,7 +131,7 @@ const TripsPage = () => {
                               {ACTION_LABEL[next]}
                             </button>
                           )}
-                          {!['COMPLETED','CANCELLED'].includes(trip.status) && (
+                          {!['COMPLETED', 'CANCELLED'].includes(trip.status) && (
                             <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-text)', marginLeft: 4 }}
                               onClick={() => cancel(trip.id)}>Cancel</button>
                           )}
@@ -144,17 +146,17 @@ const TripsPage = () => {
         </div>
         {total > LIMIT && (
           <div className="pagination">
-            <span className="pagination-info">Showing {(page-1)*LIMIT+1}–{Math.min(page*LIMIT, total)} of {total}</span>
+            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
             <div className="pagination-btns">
-              <button className="page-btn" disabled={page===1} onClick={() => setPage(p=>p-1)}>‹</button>
-              <button className="page-btn" disabled={page*LIMIT>=total} onClick={() => setPage(p=>p+1)}>›</button>
+              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
             </div>
           </div>
         )}
       </div>
 
-      {showCreate   && <CreateTripModal onClose={() => setShowCreate(false)} onSave={() => { setShowCreate(false); load(); }} />}
-      {completing   && <CompleteModal   trip={completing} onClose={() => setCompleting(null)} onSave={() => { setCompleting(null); load(); }} />}
+      {showCreate && <CreateTripModal onClose={() => setShowCreate(false)} onSave={() => { setShowCreate(false); load(); }} />}
+      {completing && <CompleteModal trip={completing} onClose={() => setCompleting(null)} onSave={() => { setCompleting(null); load(); }} />}
     </div>
   );
 };
@@ -162,9 +164,9 @@ const TripsPage = () => {
 const CreateTripModal = ({ onClose, onSave }: any) => {
   const [form, setForm] = useState({ vehicleId: '', driverId: '', origin: '', destination: '', cargoDescription: '', cargoWeightTons: '', revenue: '' });
   const [vehicles, setVehicles] = useState<any[]>([]);
-  const [drivers, setDrivers]   = useState<any[]>([]);
-  const [error, setError]       = useState('');
-  const [loading, setLoad]      = useState(false);
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [error, setError] = useState('');
+  const [loading, setLoad] = useState(false);
   const set = (k: string) => (e: any) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   useEffect(() => {
@@ -245,9 +247,9 @@ const CreateTripModal = ({ onClose, onSave }: any) => {
 const CompleteModal = ({ trip, onClose, onSave }: any) => {
   const [endOdo, setEndOdo] = useState('');
   const [revenue, setRevenue] = useState(trip.revenue || '');
-  const [misc, setMisc]     = useState(trip.miscExpenses || 0);
-  const [error, setError]   = useState('');
-  const [loading, setLoad]  = useState(false);
+  const [misc, setMisc] = useState(trip.miscExpenses || 0);
+  const [error, setError] = useState('');
+  const [loading, setLoad] = useState(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setError(''); setLoad(true);
