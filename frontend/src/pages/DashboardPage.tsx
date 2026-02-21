@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { reportsAPI, tripsAPI } from '../api/client';
 import {
   Truck, CheckCircle2, Navigation, Wrench,
-  Activity, TrendingUp, AlertTriangle, ChevronRight,
+  Activity, TrendingUp, AlertTriangle, ChevronRight, Search,
 } from 'lucide-react';
 import StatusBadge from '../components/ui/StatusBadge';
 
@@ -70,17 +70,28 @@ const DashboardPage = () => {
   const [data, setData] = useState<any>(null);
   const [recentTrips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusF, setStatusF] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    Promise.all([reportsAPI.dashboard(), tripsAPI.getAll({ limit: 7, page: 1 })])
+    Promise.all([
+      reportsAPI.dashboard(),
+      tripsAPI.getAll({ limit: 7, page: 1, search, status: statusF })
+    ])
       .then(([d, t]) => { setData(d.data.summary); setTrips(t.data.trips || []); })
-      .catch(() => setError('Failed to load dashboard.'))
-      .finally(() => setLoading(false));
+      .catch(() => setError('Failed to load dashboard.'));
+  }, [search, statusF]);
+
+  useEffect(() => {
+    if (!data) setLoading(true); // Initial load only
+    // This is just to satisfy the initial fetch if needed, but the [search] one covers it.
+    // However, if we want to separate dashboard summary from trips search, we can.
+    // Let's keep it simple: fetch both on search change for now to ensure consistency.
   }, []);
 
-  if (loading) return <div className="spinner-wrap"><div className="spinner" /></div>;
-  if (error) return <div className="alert alert-error"><AlertTriangle size={15} />{error}</div>;
+  if (loading && !data) return <div className="spinner-wrap"><div className="spinner" /></div>;
+  if (error && !data) return <div className="alert alert-error"><AlertTriangle size={15} />{error}</div>;
   if (!data) return null;
 
   const util = data.vehicles.total > 0
@@ -131,9 +142,31 @@ const DashboardPage = () => {
             <div className="card-title">Recent Trips</div>
             <div className="card-subtitle">Latest fleet activity</div>
           </div>
-          <Link to="/trips" className="btn btn-secondary btn-sm">
-            View all <ChevronRight size={13} strokeWidth={SW} />
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="search-wrap" style={{ width: 220 }}>
+              <Search size={14} strokeWidth={SW} className="search-icon-pos" />
+              <input
+                className="search-input"
+                placeholder="Search trips..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <select
+              className="filter-select"
+              value={statusF}
+              onChange={e => setStatusF(e.target.value)}
+              style={{ padding: '7px 12px', fontSize: 13 }}
+            >
+              <option value="">All Status</option>
+              {['DRAFT', 'SUBMITTED', 'APPROVED', 'DISPATCHED', 'COMPLETED', 'CANCELLED'].map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <Link to="/trips" className="btn btn-secondary btn-sm">
+              View all <ChevronRight size={13} strokeWidth={SW} />
+            </Link>
+          </div>
         </div>
         <div className="table-scroll">
           {recentTrips.length === 0 ? (
