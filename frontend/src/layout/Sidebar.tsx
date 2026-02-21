@@ -37,7 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   makeItem('/reports',     'Analytics',        BarChart3,       ['FLEET_MANAGER','FINANCIAL_ANALYST']),
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen, onClose }: { mobileOpen?: boolean, onClose?: () => void }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -47,7 +47,7 @@ const Sidebar = () => {
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'FF';
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
       {/* Brand */}
       <div className="sidebar-brand">
         <div className="brand-mark">F</div>
@@ -64,6 +64,7 @@ const Sidebar = () => {
           <NavLink
             key={item.path}
             to={item.path}
+            onClick={onClose}
             className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             {({ isActive }) => (

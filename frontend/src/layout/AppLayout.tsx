@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 
 const PAGE_META: Record<string, { title: string; sub: string }> = {
@@ -14,13 +15,18 @@ const PAGE_META: Record<string, { title: string; sub: string }> = {
 
 const AppLayout = () => {
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const meta = PAGE_META[location.pathname] || { title: 'FleetFlow', sub: '' };
 
   return (
     <div className="app-shell">
-      <Sidebar />
+      {mobileOpen && <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
+      <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="main-area">
         <header className="top-header">
+          <button className="mobile-menu-btn" onClick={() => setMobileOpen(true)}>
+            <Menu size={20} strokeWidth={1.5} color="var(--text-1)" />
+          </button>
           <div style={{ flex: 1 }}>
             <div className="header-title">{meta.title}</div>
             {meta.sub && <div className="header-sub">{meta.sub}</div>}
