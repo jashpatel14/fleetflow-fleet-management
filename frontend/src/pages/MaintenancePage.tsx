@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { maintenanceAPI, vehiclesAPI } from '../api/client';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAuth, canAccess } from '../context/AuthContext';
-import { Plus, Wrench, AlertCircle } from 'lucide-react';
+import { Plus, Wrench, Clipboard, Clock, CheckCircle2, DollarSign, AlertCircle, ExternalLink } from 'lucide-react';
 
 const SW = 1.5;
 
@@ -38,17 +38,50 @@ const MaintenancePage = () => {
     <div>
       {stats && (
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
-          {[
-            { label: 'Total Records', v: stats.total, color: 'var(--primary)' },
-            { label: 'Open', v: stats.open, color: 'var(--orange-text)' },
-            { label: 'Closed', v: stats.closed, color: 'var(--green-text)' },
-            { label: 'Total Cost', v: `₹${((stats.totalCost || 0) / 1000).toFixed(0)}K`, color: 'var(--red-text)' },
-          ].map(s => (
-            <div key={s.label} className="kpi-card" style={{ padding: '14px 16px' }}>
-              <div className="kpi-label">{s.label}</div>
-              <div className="kpi-value" style={{ fontSize: 22, color: s.color }}>{s.v}</div>
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--primary-light)' }}>
+                <Clipboard size={18} strokeWidth={1.5} color="var(--primary)" />
+              </div>
+              <ExternalLink size={14} color="var(--text-4)" />
             </div>
-          ))}
+            <div className="kpi-label">Total Records</div>
+            <div className="kpi-value">{stats.total}</div>
+            <div className="kpi-sub">Lifetime logs</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--orange-bg)' }}>
+                <Clock size={18} strokeWidth={1.5} color="var(--orange)" />
+              </div>
+            </div>
+            <div className="kpi-label">Open Tickets</div>
+            <div className="kpi-value">{stats.open}</div>
+            <div className="kpi-sub">Pending work</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--green-bg)' }}>
+                <CheckCircle2 size={18} strokeWidth={1.5} color="var(--green)" />
+              </div>
+            </div>
+            <div className="kpi-label">Closed</div>
+            <div className="kpi-value">{stats.closed}</div>
+            <div className="kpi-sub">Completed jobs</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--red-bg)' }}>
+                <DollarSign size={18} strokeWidth={1.5} color="var(--red)" />
+              </div>
+            </div>
+            <div className="kpi-label">Total Cost</div>
+            <div className="kpi-value">₹{((stats.totalCost || 0) / 1000).toFixed(0)}K</div>
+            <div className="kpi-sub">Maintenance spend</div>
+          </div>
         </div>
       )}
 
@@ -66,65 +99,72 @@ const MaintenancePage = () => {
         )}
       </div>
 
-      <div className="table-wrap">
-        <div className="table-scroll">
-          {loading ? (
-            <div className="spinner-wrap"><div className="spinner" /></div>
-          ) : logs.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon"><Wrench size={36} strokeWidth={1} color="var(--text-4)" /></div>
-              <div className="empty-title">No maintenance records</div>
-              <div className="empty-desc">Log your first maintenance entry</div>
-            </div>
-          ) : (
-            <table>
-              <thead><tr>
-                <th>Vehicle</th><th>Type</th><th>Description</th>
-                <th className="right">Cost</th><th>Opened</th><th>Closed</th>
-                <th>Status</th>{canClose && <th className="right">Action</th>}
-              </tr></thead>
-              <tbody>
-                {logs.map((log: any) => (
-                  <tr key={log.id}>
-                    <td style={{ fontWeight: 600 }}>
-                      {log.vehicle?.licensePlate}
-                      <span className="text-muted text-sm"> · {log.vehicle?.make}</span>
-                    </td>
-                    <td>
-                      <span className={`badge ${log.type === 'PREVENTIVE' ? 'badge-blue' : 'badge-orange'}`}>
-                        <span className="badge-dot" />
-                        {log.type === 'PREVENTIVE' ? 'Preventive' : 'Corrective'}
-                      </span>
-                    </td>
-                    <td className="truncate text-muted" style={{ maxWidth: 200, fontSize: 13 }}>{log.description}</td>
-                    <td className="right mono">₹{log.cost?.toLocaleString()}</td>
-                    <td className="text-muted text-sm">{new Date(log.openedAt).toLocaleDateString('en-IN')}</td>
-                    <td className="text-muted text-sm">
-                      {log.closedAt ? new Date(log.closedAt).toLocaleDateString('en-IN') : '—'}
-                    </td>
-                    <td><StatusBadge type="maintenance" status={log.status} /></td>
-                    {canClose && (
-                      <td className="right">
-                        {log.status === 'OPEN' && (
-                          <button className="btn btn-primary btn-sm" onClick={() => setClosing(log)}>Close</button>
-                        )}
+      <div className="card" style={{ border: '2px solid var(--border)' }}>
+        <div className="card-header">
+          <div className="card-title" style={{ background: 'var(--orange-bg)', color: 'var(--orange)', padding: '4px 12px', borderRadius: '16px', display: 'inline-block', fontSize: 13, fontWeight: 600 }}>
+            Maintenance Records
+          </div>
+        </div>
+        <div className="table-wrap" style={{ border: 'none', borderRadius: 0 }}>
+          <div className="table-scroll">
+            {loading ? (
+              <div className="spinner-wrap"><div className="spinner" /></div>
+            ) : logs.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon"><Wrench size={36} strokeWidth={1} color="var(--text-4)" /></div>
+                <div className="empty-title">No maintenance records</div>
+                <div className="empty-desc">Log your first maintenance entry</div>
+              </div>
+            ) : (
+              <table>
+                <thead><tr>
+                  <th>Vehicle</th><th>Type</th><th>Description</th>
+                  <th className="right">Cost</th><th>Opened</th><th>Closed</th>
+                  <th>Status</th>{canClose && <th className="right">Action</th>}
+                </tr></thead>
+                <tbody>
+                  {logs.map((log: any) => (
+                    <tr key={log.id}>
+                      <td style={{ fontWeight: 600 }}>
+                        {log.vehicle?.licensePlate}
+                        <span className="text-muted text-sm"> · {log.vehicle?.make}</span>
                       </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <td>
+                        <span className={`badge ${log.type === 'PREVENTIVE' ? 'badge-blue' : 'badge-orange'}`}>
+                          <span className="badge-dot" />
+                          {log.type === 'PREVENTIVE' ? 'Preventive' : 'Corrective'}
+                        </span>
+                      </td>
+                      <td className="truncate text-muted" style={{ maxWidth: 200, fontSize: 13 }}>{log.description}</td>
+                      <td className="right mono">₹{log.cost?.toLocaleString()}</td>
+                      <td className="text-muted text-sm">{new Date(log.openedAt).toLocaleDateString('en-IN')}</td>
+                      <td className="text-muted text-sm">
+                        {log.closedAt ? new Date(log.closedAt).toLocaleDateString('en-IN') : '—'}
+                      </td>
+                      <td><StatusBadge type="maintenance" status={log.status} /></td>
+                      {canClose && (
+                        <td className="right">
+                          {log.status === 'OPEN' && (
+                            <button className="btn btn-primary btn-sm" onClick={() => setClosing(log)}>Close</button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          {total > LIMIT && (
+            <div className="pagination" style={{ borderTop: '1px solid var(--border-light)' }}>
+              <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
+              <div className="pagination-btns">
+                <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+                <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
+              </div>
+            </div>
           )}
         </div>
-        {total > LIMIT && (
-          <div className="pagination">
-            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
-            <div className="pagination-btns">
-              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
-              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
-            </div>
-          </div>
-        )}
       </div>
 
       {showCreate && <CreateMaintenanceModal onClose={() => setShowCreate(false)} onSave={() => { setShowCreate(false); load(); }} />}

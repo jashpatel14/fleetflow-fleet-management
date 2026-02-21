@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { fuelAPI, vehiclesAPI, tripsAPI } from '../api/client';
-import { Plus, Fuel, AlertCircle } from 'lucide-react';
+import { Plus, Fuel, Droplet, CreditCard, Clipboard, ExternalLink, AlertCircle } from 'lucide-react';
 
 const SW = 1.5;
 
@@ -28,18 +28,39 @@ const FuelPage = () => {
   return (
     <div>
       {logs.length > 0 && (
-        <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-          <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
-            <div className="kpi-label" style={{ color: 'var(--green)' }}>Records Found</div>
-            <div className="kpi-value" style={{ color: 'var(--green)' }}>{logs.length}</div>
+        <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--primary-light)' }}>
+                <Clipboard size={18} strokeWidth={1.5} color="var(--primary)" />
+              </div>
+              <ExternalLink size={14} color="var(--text-4)" />
+            </div>
+            <div className="kpi-label">Records Found</div>
+            <div className="kpi-value">{logs.length}</div>
+            <div className="kpi-sub">Fuel entries</div>
           </div>
-          <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
-            <div className="kpi-label" style={{ color: 'var(--green)' }}>Total Consumption</div>
-            <div className="kpi-value" style={{ color: 'var(--green)' }}>{totalLitre.toFixed(0)}L</div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--blue-bg)' }}>
+                <Droplet size={18} strokeWidth={1.5} color="var(--blue)" />
+              </div>
+            </div>
+            <div className="kpi-label">Total Consumption</div>
+            <div className="kpi-value">{totalLitre.toFixed(0)}L</div>
+            <div className="kpi-sub">Collective volume</div>
           </div>
-          <div className="kpi-card" style={{ border: '2px solid var(--border)' }}>
-            <div className="kpi-label" style={{ color: 'var(--green)' }}>Total Expenditure</div>
-            <div className="kpi-value" style={{ color: 'var(--green)' }}>₹{totalCost.toLocaleString()}</div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--red-bg)' }}>
+                <CreditCard size={18} strokeWidth={1.5} color="var(--red)" />
+              </div>
+            </div>
+            <div className="kpi-label">Total Expenditure</div>
+            <div className="kpi-value">₹{totalCost.toLocaleString()}</div>
+            <div className="kpi-sub">Lifetime fuel spend</div>
           </div>
         </div>
       )}
@@ -53,7 +74,7 @@ const FuelPage = () => {
 
       <div className="card" style={{ border: '2px solid var(--border)' }}>
         <div className="card-header">
-          <div className="card-title" style={{ background: 'var(--blue-bg)', color: 'var(--blue)', padding: '4px 12px', borderRadius: '16px', display: 'inline-block' }}>
+          <div className="card-title" style={{ background: 'var(--red-bg)', color: 'var(--red)', padding: '4px 12px', borderRadius: '16px', display: 'inline-block', fontSize: 13, fontWeight: 600 }}>
             Recent Fuel Logs
           </div>
         </div>
@@ -76,9 +97,9 @@ const FuelPage = () => {
                 <tbody>
                   {logs.map((log: any) => (
                     <tr key={log.id}>
-                      <td style={{ fontWeight: 600 }}>
+                      <td style={{ fontWeight: 600, color: 'var(--primary)' }}>
                         {log.vehicle?.licensePlate}
-                        <span className="text-muted text-sm" style={{ fontWeight: 400 }}> · {log.vehicle?.make}</span>
+                        <span className="text-muted text-sm" style={{ fontWeight: 400, color: 'var(--text-3)' }}> · {log.vehicle?.make}</span>
                       </td>
                       <td style={{ fontSize: 13 }}>
                         {log.trip

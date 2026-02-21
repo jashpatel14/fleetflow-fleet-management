@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { vehiclesAPI } from '../api/client';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAuth, canAccess } from '../context/AuthContext';
-import { Search, Plus, Truck, AlertCircle } from 'lucide-react';
+import { Search, Plus, Truck, CheckCircle2, Navigation, Wrench, AlertCircle, ExternalLink } from 'lucide-react';
 
 const SW = 1.5;
 const VEHICLE_TYPES = ['MINI_TRUCK', 'TRUCK', 'TRAILER', 'TANKER', 'CONTAINER', 'VAN'];
@@ -46,18 +46,61 @@ const VehiclesPage = () => {
       {/* Stats */}
       {stats && (
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(5,1fr)' }}>
-          {[
-            { label: 'Total', v: stats.total, color: 'var(--primary)' },
-            { label: 'Available', v: stats.available, color: 'var(--green-text)' },
-            { label: 'On Trip', v: stats.onTrip, color: 'var(--blue-text)' },
-            { label: 'In Shop', v: stats.inShop, color: 'var(--orange-text)' },
-            { label: 'Retired', v: stats.retired, color: 'var(--text-3)' },
-          ].map(s => (
-            <div key={s.label} className="kpi-card" style={{ padding: '14px 16px' }}>
-              <div className="kpi-label">{s.label}</div>
-              <div className="kpi-value" style={{ fontSize: 22, color: s.color }}>{s.v}</div>
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--primary-light)' }}>
+                <Truck size={18} strokeWidth={1.5} color="var(--primary)" />
+              </div>
+              <ExternalLink size={14} color="var(--text-4)" />
             </div>
-          ))}
+            <div className="kpi-label">Total Fleet</div>
+            <div className="kpi-value">{stats.total}</div>
+            <div className="kpi-sub">Vehicles registered</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--green-bg)' }}>
+                <CheckCircle2 size={18} strokeWidth={1.5} color="var(--green)" />
+              </div>
+            </div>
+            <div className="kpi-label">Available</div>
+            <div className="kpi-value">{stats.available}</div>
+            <div className="kpi-sub">Ready for dispatch</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--blue-bg)' }}>
+                <Navigation size={18} strokeWidth={1.5} color="var(--blue)" />
+              </div>
+            </div>
+            <div className="kpi-label">On Trip</div>
+            <div className="kpi-value">{stats.onTrip}</div>
+            <div className="kpi-sub">Currently active</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--orange-bg)' }}>
+                <Wrench size={18} strokeWidth={1.5} color="var(--orange)" />
+              </div>
+            </div>
+            <div className="kpi-label">In Shop</div>
+            <div className="kpi-value">{stats.inShop}</div>
+            <div className="kpi-sub">Maintenance / Repair</div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="kpi-icon-row">
+              <div className="kpi-icon-wrap" style={{ background: 'var(--gray-bg)' }}>
+                <AlertCircle size={18} strokeWidth={1.5} color="var(--text-3)" />
+              </div>
+            </div>
+            <div className="kpi-label">Retired</div>
+            <div className="kpi-value">{stats.retired}</div>
+            <div className="kpi-sub">Decommissioned</div>
+          </div>
         </div>
       )}
 
@@ -79,64 +122,71 @@ const VehiclesPage = () => {
         )}
       </div>
 
-      <div className="table-wrap">
-        <div className="table-scroll">
-          {loading ? (
-            <div className="spinner-wrap"><div className="spinner" /></div>
-          ) : vehicles.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon"><Truck size={36} strokeWidth={1} color="var(--text-4)" /></div>
-              <div className="empty-title">No vehicles found</div>
-              <div className="empty-desc">Try adjusting your search or filters</div>
-            </div>
-          ) : (
-            <table>
-              <thead><tr>
-                <th>License Plate</th><th>Make / Model</th><th>Type</th>
-                <th className="right">Capacity</th><th className="right">Odometer</th>
-                <th>Status</th>{canManage && <th className="right">Actions</th>}
-              </tr></thead>
-              <tbody>
-                {vehicles.map((v: any) => (
-                  <tr key={v.id}>
-                    <td style={{ fontWeight: 600 }}>{v.licensePlate}</td>
-                    <td>
-                      {v.make} {v.model}
-                      <span className="text-muted text-sm"> · {v.year}</span>
-                    </td>
-                    <td className="text-muted text-sm">{v.type.replace('_', ' ')}</td>
-                    <td className="right mono">{v.capacityTons}t</td>
-                    <td className="right mono">{v.currentOdometer.toLocaleString()} km</td>
-                    <td><StatusBadge type="vehicle" status={v.status} /></td>
-                    {canManage && (
-                      <td className="right" style={{ whiteSpace: 'nowrap' }}>
-                        <button className="btn btn-ghost btn-sm"
-                          onClick={() => { setEditing(v); setModal(true); }}>Edit</button>
-                        {v.status === 'IN_SHOP' && (
-                          <button className="btn btn-ghost btn-sm" style={{ color: 'var(--green-text)' }}
-                            onClick={() => changeStatus(v.id, 'AVAILABLE')}>Release</button>
-                        )}
-                        {v.status === 'AVAILABLE' && (
-                          <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-text)' }}
-                            onClick={() => changeStatus(v.id, 'RETIRED')}>Retire</button>
-                        )}
+      <div className="card" style={{ border: '2px solid var(--border)' }}>
+        <div className="card-header">
+          <div className="card-title" style={{ background: 'var(--blue-bg)', color: 'var(--blue)', padding: '4px 12px', borderRadius: '16px', display: 'inline-block', fontSize: 13, fontWeight: 600 }}>
+            Fleet Vehicles
+          </div>
+        </div>
+        <div className="table-wrap" style={{ border: 'none', borderRadius: 0 }}>
+          <div className="table-scroll">
+            {loading ? (
+              <div className="spinner-wrap"><div className="spinner" /></div>
+            ) : vehicles.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon"><Truck size={36} strokeWidth={1} color="var(--text-4)" /></div>
+                <div className="empty-title">No vehicles found</div>
+                <div className="empty-desc">Try adjusting your search or filters</div>
+              </div>
+            ) : (
+              <table>
+                <thead><tr>
+                  <th>License Plate</th><th>Make / Model</th><th>Type</th>
+                  <th className="right">Capacity</th><th className="right">Odometer</th>
+                  <th>Status</th>{canManage && <th className="right">Actions</th>}
+                </tr></thead>
+                <tbody>
+                  {vehicles.map((v: any) => (
+                    <tr key={v.id}>
+                      <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{v.licensePlate}</td>
+                      <td>
+                        {v.make} {v.model}
+                        <span className="text-muted text-sm"> · {v.year}</span>
                       </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <td className="text-muted text-sm">{v.type.replace('_', ' ')}</td>
+                      <td className="right mono">{v.capacityTons}t</td>
+                      <td className="right mono">{v.currentOdometer.toLocaleString()} km</td>
+                      <td><StatusBadge type="vehicle" status={v.status} /></td>
+                      {canManage && (
+                        <td className="right" style={{ whiteSpace: 'nowrap' }}>
+                          <button className="btn btn-ghost btn-sm"
+                            onClick={() => { setEditing(v); setModal(true); }}>Edit</button>
+                          {v.status === 'IN_SHOP' && (
+                            <button className="btn btn-ghost btn-sm" style={{ color: 'var(--green-text)' }}
+                              onClick={() => changeStatus(v.id, 'AVAILABLE')}>Release</button>
+                          )}
+                          {v.status === 'AVAILABLE' && (
+                            <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-text)' }}
+                              onClick={() => changeStatus(v.id, 'RETIRED')}>Retire</button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          {total > LIMIT && (
+            <div className="pagination" style={{ borderTop: '1px solid var(--border-light)' }}>
+              <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
+              <div className="pagination-btns">
+                <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+                <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
+              </div>
+            </div>
           )}
         </div>
-        {total > LIMIT && (
-          <div className="pagination">
-            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
-            <div className="pagination-btns">
-              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
-              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
-            </div>
-          </div>
-        )}
       </div>
 
       {modal && <VehicleModal vehicle={editing} onClose={() => setModal(false)} onSave={() => { setModal(false); load(); }} />}

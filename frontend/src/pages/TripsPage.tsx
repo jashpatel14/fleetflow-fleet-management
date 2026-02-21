@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { tripsAPI, vehiclesAPI, driversAPI } from '../api/client';
 import StatusBadge from '../components/ui/StatusBadge';
 import { useAuth, canAccess } from '../context/AuthContext';
-import { Search, Plus, Route, AlertCircle } from 'lucide-react';
+import { Search, Plus, Route, FileText, Send, CheckCircle2, Navigation, Flag, Slash, AlertCircle } from 'lucide-react';
 
 const SW = 1.5;
 const NEXT_STATUS: Record<string, string | null> = {
@@ -57,16 +57,23 @@ const TripsPage = () => {
     <div>
       {stats && (
         <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(6,1fr)' }}>
-          {(['draft', 'submitted', 'approved', 'dispatched', 'completed', 'cancelled'] as const).map(key => (
-            <div key={key} className="kpi-card" style={{ padding: '14px 16px', cursor: 'pointer' }}
-              onClick={() => { setStatusF(key.toUpperCase()); setPage(1); }}>
-              <div className="kpi-label" style={{ textTransform: 'capitalize' }}>{key}</div>
-              <div className="kpi-value" style={{
-                fontSize: 22, color:
-                  key === 'completed' ? 'var(--green-text)' : key === 'dispatched' ? 'var(--blue-text)'
-                    : key === 'cancelled' ? 'var(--red-text)' : key === 'approved' ? '#6D28D9'
-                      : key === 'submitted' ? 'var(--yellow-text)' : 'var(--text-3)'
-              }}>{stats[key] || 0}</div>
+          {[
+            { key: 'draft', label: 'Draft', icon: FileText, color: 'var(--text-3)', bg: 'var(--gray-bg)' },
+            { key: 'submitted', label: 'Submitted', icon: Send, color: 'var(--yellow)', bg: 'var(--yellow-bg)' },
+            { key: 'approved', label: 'Approved', icon: CheckCircle2, color: 'var(--purple)', bg: 'var(--purple-bg)' },
+            { key: 'dispatched', label: 'Dispatched', icon: Navigation, color: 'var(--blue)', bg: 'var(--blue-bg)' },
+            { key: 'completed', label: 'Completed', icon: Flag, color: 'var(--green)', bg: 'var(--green-bg)' },
+            { key: 'cancelled', label: 'Cancelled', icon: Slash, color: 'var(--red)', bg: 'var(--red-bg)' },
+          ].map(s => (
+            <div key={s.key} className="kpi-card" style={{ cursor: 'pointer' }}
+              onClick={() => { setStatusF(s.key.toUpperCase()); setPage(1); }}>
+              <div className="kpi-icon-row">
+                <div className="kpi-icon-wrap" style={{ background: s.bg }}>
+                  <s.icon size={18} strokeWidth={1.5} color={s.color} />
+                </div>
+              </div>
+              <div className="kpi-label">{s.label}</div>
+              <div className="kpi-value">{stats[s.key] || 0}</div>
             </div>
           ))}
         </div>
@@ -91,68 +98,75 @@ const TripsPage = () => {
         )}
       </div>
 
-      <div className="table-wrap">
-        <div className="table-scroll">
-          {loading ? (
-            <div className="spinner-wrap"><div className="spinner" /></div>
-          ) : trips.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon"><Route size={36} strokeWidth={1} color="var(--text-4)" /></div>
-              <div className="empty-title">No trips found</div>
-              <div className="empty-desc">Create a trip to get started</div>
-            </div>
-          ) : (
-            <table>
-              <thead><tr>
-                <th>Trip No.</th><th>Vehicle</th><th>Driver</th>
-                <th>Route</th><th className="right">Cargo</th>
-                <th className="right">Revenue</th><th>Status</th>
-                {canManage && <th className="right">Actions</th>}
-              </tr></thead>
-              <tbody>
-                {trips.map((trip: any) => {
-                  const next = NEXT_STATUS[trip.status];
-                  return (
-                    <tr key={trip.id}>
-                      <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{trip.tripNumber}</td>
-                      <td>
-                        {trip.vehicle?.licensePlate}
-                        <span className="text-muted text-sm"> · {trip.vehicle?.make}</span>
-                      </td>
-                      <td>{trip.driver?.name}</td>
-                      <td className="text-muted" style={{ fontSize: 13 }}>{trip.origin} → {trip.destination}</td>
-                      <td className="right mono">{trip.cargoWeightTons}t</td>
-                      <td className="right mono">₹{trip.revenue?.toLocaleString()}</td>
-                      <td><StatusBadge type="trip" status={trip.status} /></td>
-                      {canManage && (
-                        <td className="right" style={{ whiteSpace: 'nowrap' }}>
-                          {next && (
-                            <button className="btn btn-primary btn-sm" onClick={() => advance(trip)}>
-                              {ACTION_LABEL[next]}
-                            </button>
-                          )}
-                          {!['COMPLETED', 'CANCELLED'].includes(trip.status) && (
-                            <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-text)', marginLeft: 4 }}
-                              onClick={() => cancel(trip.id)}>Cancel</button>
-                          )}
+      <div className="card" style={{ border: '2px solid var(--border)' }}>
+        <div className="card-header">
+          <div className="card-title" style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '4px 12px', borderRadius: '16px', display: 'inline-block', fontSize: 13, fontWeight: 600 }}>
+            Fleet Trips
+          </div>
+        </div>
+        <div className="table-wrap" style={{ border: 'none', borderRadius: 0 }}>
+          <div className="table-scroll">
+            {loading ? (
+              <div className="spinner-wrap"><div className="spinner" /></div>
+            ) : trips.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon"><Route size={36} strokeWidth={1} color="var(--text-4)" /></div>
+                <div className="empty-title">No trips found</div>
+                <div className="empty-desc">Create a trip to get started</div>
+              </div>
+            ) : (
+              <table>
+                <thead><tr>
+                  <th>Trip No.</th><th>Vehicle</th><th>Driver</th>
+                  <th>Route</th><th className="right">Cargo</th>
+                  <th className="right">Revenue</th><th>Status</th>
+                  {canManage && <th className="right">Actions</th>}
+                </tr></thead>
+                <tbody>
+                  {trips.map((trip: any) => {
+                    const next = NEXT_STATUS[trip.status];
+                    return (
+                      <tr key={trip.id}>
+                        <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{trip.tripNumber}</td>
+                        <td>
+                          {trip.vehicle?.licensePlate}
+                          <span className="text-muted text-sm"> · {trip.vehicle?.make}</span>
                         </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <td>{trip.driver?.name}</td>
+                        <td className="text-muted" style={{ fontSize: 13 }}>{trip.origin} → {trip.destination}</td>
+                        <td className="right mono">{trip.cargoWeightTons}t</td>
+                        <td className="right mono">₹{trip.revenue?.toLocaleString()}</td>
+                        <td><StatusBadge type="trip" status={trip.status} /></td>
+                        {canManage && (
+                          <td className="right" style={{ whiteSpace: 'nowrap' }}>
+                            {next && (
+                              <button className="btn btn-primary btn-sm" onClick={() => advance(trip)}>
+                                {ACTION_LABEL[next]}
+                              </button>
+                            )}
+                            {!['COMPLETED', 'CANCELLED'].includes(trip.status) && (
+                              <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-text)', marginLeft: 4 }}
+                                onClick={() => cancel(trip.id)}>Cancel</button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+          {total > LIMIT && (
+            <div className="pagination" style={{ borderTop: '1px solid var(--border-light)' }}>
+              <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
+              <div className="pagination-btns">
+                <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+                <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
+              </div>
+            </div>
           )}
         </div>
-        {total > LIMIT && (
-          <div className="pagination">
-            <span className="pagination-info">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</span>
-            <div className="pagination-btns">
-              <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
-              <button className="page-btn" disabled={page * LIMIT >= total} onClick={() => setPage(p => p + 1)}>›</button>
-            </div>
-          </div>
-        )}
       </div>
 
       {showCreate && <CreateTripModal onClose={() => setShowCreate(false)} onSave={() => { setShowCreate(false); load(); }} />}
