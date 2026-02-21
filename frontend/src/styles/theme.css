@@ -580,9 +580,10 @@ th.right { text-align: right; }
   :root { --sidebar-w: 0px; --pad: 12px; }
 
   .sidebar { display: none; }
-  .main-area { margin-left: 0; width: 100%; }
+  .main-area { margin-left: 0; width: 100%; overflow-x: hidden; }
 
   .kpi-grid { grid-template-columns: 1fr !important; }
+  .reports-layout { grid-template-columns: 1fr !important; }
   .kpi-value { font-size: 20px; }
   th, td { padding: 8px 10px; font-size: 12.5px; }
   .btn { font-size: 12.5px; padding: 8px 12px; }
