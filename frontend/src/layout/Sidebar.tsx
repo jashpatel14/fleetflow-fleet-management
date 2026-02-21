@@ -1,22 +1,40 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard, Truck, User, Route, Wrench,
+  Fuel, BarChart3, LogOut,
+} from 'lucide-react';
 import { useAuth, canAccess, ROLE_LABELS } from '../context/AuthContext';
+
+const ICON_SIZE  = 18;
+const ICON_STROKE = 1.5;
 
 interface NavItem {
   path: string;
-  icon: string;
   label: string;
+  icon: React.ReactNode;
+  activeIcon: React.ReactNode;
   roles: string[];
 }
 
+const makeItem = (
+  path: string, label: string,
+  Icon: React.ComponentType<any>,
+  roles: string[]
+): NavItem => ({
+  path, label, roles,
+  icon:       <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color="var(--text-3)" />,
+  activeIcon: <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} color="var(--primary)" />,
+});
+
 const NAV_ITEMS: NavItem[] = [
-  { path: '/dashboard',   icon: '▦',  label: 'Dashboard',       roles: ['FLEET_MANAGER','DISPATCHER','SAFETY_OFFICER','FINANCIAL_ANALYST'] },
-  { path: '/vehicles',    icon: '🚛', label: 'Vehicles',         roles: ['FLEET_MANAGER','DISPATCHER'] },
-  { path: '/drivers',     icon: '👤', label: 'Driver Profiles',  roles: ['FLEET_MANAGER','SAFETY_OFFICER'] },
-  { path: '/trips',       icon: '📋', label: 'Trip Dispatcher',  roles: ['FLEET_MANAGER','DISPATCHER'] },
-  { path: '/maintenance', icon: '🔧', label: 'Maintenance',      roles: ['FLEET_MANAGER','SAFETY_OFFICER','DISPATCHER'] },
-  { path: '/fuel',        icon: '⛽', label: 'Expense & Fuel',   roles: ['FLEET_MANAGER','DISPATCHER'] },
-  { path: '/reports',     icon: '📊', label: 'Analytics',        roles: ['FLEET_MANAGER','FINANCIAL_ANALYST'] },
+  makeItem('/dashboard',   'Dashboard',        LayoutDashboard, ['FLEET_MANAGER','DISPATCHER','SAFETY_OFFICER','FINANCIAL_ANALYST']),
+  makeItem('/vehicles',    'Vehicles',         Truck,           ['FLEET_MANAGER','DISPATCHER']),
+  makeItem('/drivers',     'Driver Profiles',  User,            ['FLEET_MANAGER','SAFETY_OFFICER']),
+  makeItem('/trips',       'Trip Dispatcher',  Route,           ['FLEET_MANAGER','DISPATCHER']),
+  makeItem('/maintenance', 'Maintenance',      Wrench,          ['FLEET_MANAGER','DISPATCHER','SAFETY_OFFICER']),
+  makeItem('/fuel',        'Expense & Fuel',   Fuel,            ['FLEET_MANAGER','DISPATCHER']),
+  makeItem('/reports',     'Analytics',        BarChart3,       ['FLEET_MANAGER','FINANCIAL_ANALYST']),
 ];
 
 const Sidebar = () => {
@@ -25,55 +43,56 @@ const Sidebar = () => {
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
-  const visibleItems = NAV_ITEMS.filter(item =>
-    canAccess(user?.role, item.roles)
-  );
-
+  const visible = NAV_ITEMS.filter(item => canAccess(user?.role, item.roles));
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'FF';
 
   return (
     <aside className="sidebar">
       {/* Brand */}
       <div className="sidebar-brand">
-        <div className="brand-icon">F</div>
+        <div className="brand-mark">F</div>
         <div>
           <div className="brand-name">FleetFlow</div>
-          <div className="brand-sub">Core v1.0</div>
+          <div className="brand-version">Core v1.0</div>
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Nav */}
       <nav className="sidebar-nav">
-        <div className="sidebar-section">
-          <div className="sidebar-section-label">Navigation</div>
-          {visibleItems.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </div>
+        <div className="nav-section-label">Navigation</div>
+        {visible.map(item => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+          >
+            {({ isActive }) => (
+              <>
+                <span className="nav-icon">
+                  {isActive ? item.activeIcon : item.icon}
+                </span>
+                {item.label}
+              </>
+            )}
+          </NavLink>
+        ))}
       </nav>
 
-      {/* User info + logout */}
+      {/* User Footer */}
       <div className="sidebar-footer">
-        <div className="user-info">
+        <div className="user-pill">
           <div className="user-avatar">{initials}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="user-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
+            <div className="user-name truncate">{user?.name}</div>
             <div className="user-role">{ROLE_LABELS[user?.role || '']}</div>
           </div>
           <button
             onClick={handleLogout}
-            className="btn btn-ghost btn-sm"
-            title="Logout"
-            style={{ padding: '4px 6px', fontSize: 16 }}
+            className="btn btn-ghost btn-icon"
+            title="Sign out"
+            style={{ padding: 6, color: 'var(--text-3)' }}
           >
-            ⎋
+            <LogOut size={15} strokeWidth={ICON_STROKE} />
           </button>
         </div>
       </div>

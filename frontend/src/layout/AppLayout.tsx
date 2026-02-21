@@ -2,44 +2,37 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
-const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
-  '/dashboard':   { title: 'Main Dashboard',     subtitle: 'Fleet overview and live KPIs' },
-  '/vehicles':    { title: 'Vehicle Registry',   subtitle: 'Manage your fleet assets' },
-  '/drivers':     { title: 'Driver Profiles',    subtitle: 'Driver performance and compliance' },
-  '/trips':       { title: 'Trip Dispatcher',    subtitle: 'Manage and track fleet trips' },
-  '/maintenance': { title: 'Maintenance Logs',   subtitle: 'Service and repair tracking' },
-  '/fuel':        { title: 'Expense & Fuel',     subtitle: 'Fuel and expense logging' },
-  '/reports':     { title: 'Analytics & Reports', subtitle: 'Financial and operational reports' },
+const PAGE_META: Record<string, { title: string; sub: string }> = {
+  '/dashboard':   { title: 'Dashboard',         sub: 'Fleet overview and live KPIs' },
+  '/vehicles':    { title: 'Vehicle Registry',  sub: 'Manage your fleet assets' },
+  '/drivers':     { title: 'Driver Profiles',   sub: 'Driver compliance and performance' },
+  '/trips':       { title: 'Trip Dispatcher',   sub: 'Manage and track trips' },
+  '/maintenance': { title: 'Maintenance Logs',  sub: 'Service and repair tracking' },
+  '/fuel':        { title: 'Expense & Fuel',    sub: 'Fuel cost and expense logging' },
+  '/reports':     { title: 'Analytics',         sub: 'Financial and operational reports' },
 };
 
 const AppLayout = () => {
   const location = useLocation();
-  const pageInfo = PAGE_TITLES[location.pathname] || { title: 'FleetFlow', subtitle: '' };
+  const meta = PAGE_META[location.pathname] || { title: 'FleetFlow', sub: '' };
 
   return (
     <div className="app-shell">
       <Sidebar />
       <div className="main-area">
-        {/* Top Header */}
         <header className="top-header">
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{pageInfo.title}</div>
-            {pageInfo.subtitle && (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>{pageInfo.subtitle}</div>
-            )}
+            <div className="header-title">{meta.title}</div>
+            {meta.sub && <div className="header-sub">{meta.sub}</div>}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-              {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </div>
-            <div style={{
-              width: 8, height: 8, borderRadius: '50%',
-              background: 'var(--green)', boxShadow: '0 0 0 2px var(--green-bg)',
-            }} title="System Online" />
+          <div className="header-pill">
+            <span className="status-dot" />
+            System Online
           </div>
+          <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 4 }}>
+            {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </span>
         </header>
-
-        {/* Page Content */}
         <main className="page-content">
           <Outlet />
         </main>

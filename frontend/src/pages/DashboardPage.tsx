@@ -1,103 +1,103 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { reportsAPI } from '../api/client';
-import { tripsAPI } from '../api/client';
+import { reportsAPI, tripsAPI } from '../api/client';
+import {
+  Truck, CheckCircle2, Navigation, Wrench,
+  Activity, TrendingUp, AlertTriangle, ChevronRight,
+} from 'lucide-react';
+import StatusBadge from '../components/ui/StatusBadge';
 
-interface DashboardData {
-  vehicles: { total: number; available: number; onTrip: number; inShop: number; retired: number };
-  activeTrips: number;
-  maintenanceOpen: number;
-  expiringLicenses: number;
-  totalRevenue: number;
-}
+const S = 18;
+const SW = 1.5;
 
-const KpiCard = ({ icon, label, value, sub, color }: { icon: string; label: string; value: string | number; sub?: string; color: string }) => (
+const KpiCard = ({
+  icon, label, value, sub, iconBg, iconColor,
+}: { icon: React.ReactNode; label: string; value: string | number; sub?: string; iconBg: string; iconColor: string }) => (
   <div className="kpi-card">
-    <div className="kpi-icon" style={{ background: color + '20', color }}>{icon}</div>
-    <div className="kpi-content">
-      <div className="kpi-label">{label}</div>
-      <div className="kpi-value">{value}</div>
-      {sub && <div className="kpi-trend">{sub}</div>}
+    <div className="kpi-icon-row">
+      <div className="kpi-icon-wrap" style={{ background: iconBg }}>
+        {React.cloneElement(icon as React.ReactElement, { size: S, strokeWidth: SW, color: iconColor })}
+      </div>
     </div>
+    <div className="kpi-label">{label}</div>
+    <div className="kpi-value">{value}</div>
+    {sub && <div className="kpi-sub">{sub}</div>}
   </div>
 );
 
 const DashboardPage = () => {
-  const [data, setData]       = useState<DashboardData | null>(null);
+  const [data, setData]         = useState<any>(null);
   const [recentTrips, setTrips] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [dashRes, tripRes] = await Promise.all([
-          reportsAPI.dashboard(),
-          tripsAPI.getAll({ limit: 7, page: 1 }),
-        ]);
-        setData(dashRes.data.summary);
-        setTrips(tripRes.data.trips || []);
-      } catch (e: any) {
-        setError('Failed to load dashboard data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    Promise.all([reportsAPI.dashboard(), tripsAPI.getAll({ limit: 7, page: 1 })])
+      .then(([d, t]) => { setData(d.data.summary); setTrips(t.data.trips || []); })
+      .catch(() => setError('Failed to load dashboard.'))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="spinner-wrapper"><div className="spinner" /></div>;
-  if (error)   return <div className="alert alert-error">{error}</div>;
+  if (loading) return <div className="spinner-wrap"><div className="spinner" /></div>;
+  if (error)   return <div className="alert alert-error"><AlertTriangle size={15} />{error}</div>;
   if (!data)   return null;
 
-  const utilization = data.vehicles.total > 0
-    ? Math.round(((data.vehicles.onTrip + data.vehicles.available) / data.vehicles.total) * 100)
-    : 0;
-
-  const TRIP_STATUS_COLORS: Record<string, string> = {
-    DRAFT: 'badge badge-gray', SUBMITTED: 'badge badge-yellow',
-    APPROVED: 'badge badge-purple', DISPATCHED: 'badge badge-blue',
-    COMPLETED: 'badge badge-green', CANCELLED: 'badge badge-red',
-  };
+  const util = data.vehicles.total > 0
+    ? Math.round(((data.vehicles.onTrip + data.vehicles.available) / data.vehicles.total) * 100) : 0;
 
   return (
     <div>
       {/* Alerts */}
       {data.expiringLicenses > 0 && (
         <div className="alert alert-warning">
-          ⚠ <strong>{data.expiringLicenses} driver license(s)</strong> expiring within 30 days.
-          <Link to="/drivers" style={{ marginLeft: 8, fontWeight: 600, color: 'var(--orange)' }}>View Drivers →</Link>
+          <AlertTriangle size={15} strokeWidth={SW} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span>
+            <strong>{data.expiringLicenses} driver license{data.expiringLicenses > 1 ? 's' : ''}</strong> expiring within 30 days.
+            <Link to="/drivers" style={{ marginLeft: 8, fontWeight: 600, color: 'inherit', textDecoration: 'underline' }}>
+              View Drivers →
+            </Link>
+          </span>
         </div>
       )}
       {data.maintenanceOpen > 0 && (
         <div className="alert alert-warning">
-          🔧 <strong>{data.maintenanceOpen} vehicle(s)</strong> currently in maintenance.
-          <Link to="/maintenance" style={{ marginLeft: 8, fontWeight: 600, color: 'var(--orange)' }}>View Maintenance →</Link>
+          <Wrench size={15} strokeWidth={SW} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span>
+            <strong>{data.maintenanceOpen} vehicle{data.maintenanceOpen > 1 ? 's' : ''}</strong> currently in maintenance.
+            <Link to="/maintenance" style={{ marginLeft: 8, fontWeight: 600, color: 'inherit', textDecoration: 'underline' }}>
+              View Maintenance →
+            </Link>
+          </span>
         </div>
       )}
 
-      {/* KPI Cards */}
+      {/* KPIs */}
       <div className="kpi-grid">
-        <KpiCard icon="🚛" label="Total Fleet"      value={data.vehicles.total}     color="#2563EB" sub={`${utilization}% utilization`} />
-        <KpiCard icon="✅" label="Available"         value={data.vehicles.available} color="#22C55E" />
-        <KpiCard icon="🛣️" label="On Trip"          value={data.vehicles.onTrip}    color="#3B82F6" />
-        <KpiCard icon="🔧" label="In Maintenance"   value={data.vehicles.inShop}    color="#F59E0B" />
-        <KpiCard icon="📋" label="Active Trips"      value={data.activeTrips}        color="#8B5CF6" />
-        <KpiCard icon="💰" label="Total Revenue"     value={`₹${(data.totalRevenue/100000).toFixed(1)}L`} color="#22C55E" />
+        <KpiCard icon={<Truck />}         label="Total Fleet"        value={data.vehicles.total}     sub={`${util}% utilization`} iconBg="#EFF6FF" iconColor="#2563EB" />
+        <KpiCard icon={<CheckCircle2 />}  label="Available"          value={data.vehicles.available} iconBg="#F0FDF4" iconColor="#16A34A" />
+        <KpiCard icon={<Navigation />}    label="On Trip"            value={data.vehicles.onTrip}    iconBg="#EFF6FF" iconColor="#2563EB" />
+        <KpiCard icon={<Wrench />}        label="In Maintenance"     value={data.vehicles.inShop}    iconBg="#FFFBEB" iconColor="#B45309" />
+        <KpiCard icon={<Activity />}      label="Active Trips"       value={data.activeTrips}        iconBg="#F5F3FF" iconColor="#6D28D9" />
+        <KpiCard icon={<TrendingUp />}    label="Total Revenue"      value={`₹${(data.totalRevenue / 100000).toFixed(1)}L`} iconBg="#F0FDF4" iconColor="#16A34A" />
       </div>
 
-      {/* Recent Trips Table */}
+      {/* Recent Trips */}
       <div className="card">
         <div className="card-header">
-          <span className="card-title">Recent Trips</span>
-          <Link to="/trips" className="btn btn-secondary btn-sm">View All →</Link>
+          <div>
+            <div className="card-title">Recent Trips</div>
+            <div className="card-subtitle">Latest fleet activity</div>
+          </div>
+          <Link to="/trips" className="btn btn-secondary btn-sm">
+            View all <ChevronRight size={13} strokeWidth={SW} />
+          </Link>
         </div>
-        <div className="table-container">
+        <div className="table-scroll">
           {recentTrips.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">📋</div>
+              <div className="empty-icon"><Truck size={36} strokeWidth={1} color="var(--text-4)" /></div>
               <div className="empty-title">No trips yet</div>
-              <div className="empty-desc">Create your first trip to get started</div>
+              <div className="empty-desc">Create your first trip to see it here</div>
             </div>
           ) : (
             <table>
@@ -106,18 +106,21 @@ const DashboardPage = () => {
                   <th>Trip No.</th>
                   <th>Vehicle</th>
                   <th>Driver</th>
-                  <th>Origin → Destination</th>
+                  <th>Route</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {recentTrips.map((trip: any) => (
-                  <tr key={trip.id}>
-                    <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{trip.tripNumber}</td>
-                    <td>{trip.vehicle?.licensePlate} <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>({trip.vehicle?.make})</span></td>
-                    <td>{trip.driver?.name}</td>
-                    <td>{trip.origin} → {trip.destination}</td>
-                    <td><span className={TRIP_STATUS_COLORS[trip.status] || 'badge badge-gray'}>{trip.status}</span></td>
+                {recentTrips.map((t: any) => (
+                  <tr key={t.id}>
+                    <td style={{ fontWeight: 600, color: 'var(--primary)' }}>{t.tripNumber}</td>
+                    <td>
+                      {t.vehicle?.licensePlate}
+                      <span className="text-muted text-sm"> · {t.vehicle?.make}</span>
+                    </td>
+                    <td>{t.driver?.name}</td>
+                    <td className="text-muted" style={{ fontSize: 13 }}>{t.origin} → {t.destination}</td>
+                    <td><StatusBadge type="trip" status={t.status} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -127,22 +130,22 @@ const DashboardPage = () => {
       </div>
 
       {/* Quick Actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginTop: 20 }}>
-        <Link to="/trips" className="card" style={{ padding: '20px', display: 'block', textAlign: 'center', cursor: 'pointer', transition: 'box-shadow 0.2s' }}>
-          <div style={{ fontSize: 28, marginBottom: 8 }}>🚛</div>
-          <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>New Trip</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Dispatch a vehicle</div>
-        </Link>
-        <Link to="/vehicles" className="card" style={{ padding: '20px', display: 'block', textAlign: 'center', cursor: 'pointer' }}>
-          <div style={{ fontSize: 28, marginBottom: 8 }}>🔩</div>
-          <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Add Vehicle</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Register new asset</div>
-        </Link>
-        <Link to="/maintenance" className="card" style={{ padding: '20px', display: 'block', textAlign: 'center', cursor: 'pointer' }}>
-          <div style={{ fontSize: 28, marginBottom: 8 }}>🔧</div>
-          <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Maintenance</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Log service record</div>
-        </Link>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginTop: 16 }}>
+        {[
+          { to: '/trips',       icon: <Navigation size={20} strokeWidth={SW} color="var(--primary)" />,       title: 'Dispatch Trip',   desc: 'Assign vehicle & driver' },
+          { to: '/vehicles',    icon: <Truck size={20} strokeWidth={SW} color="#16A34A" />,                    title: 'Add Vehicle',     desc: 'Register fleet asset' },
+          { to: '/maintenance', icon: <Wrench size={20} strokeWidth={SW} color="var(--orange-text)" />,        title: 'Log Maintenance', desc: 'Record service entry' },
+        ].map(a => (
+          <Link key={a.to} to={a.to} className="card" style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14, transition: 'box-shadow 0.2s ease' }}>
+            <div style={{ width: 38, height: 38, borderRadius: 8, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {a.icon}
+            </div>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>{a.title}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>{a.desc}</div>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );

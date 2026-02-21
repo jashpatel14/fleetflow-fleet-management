@@ -1,8 +1,6 @@
 // Mock data store — mirrors seed.js data exactly
 // Used when VITE_USE_MOCK=true in .env.local
 
-import { v4 as uuid } from 'crypto';
-
 const now = new Date();
 const d = (days: number) => new Date(now.getTime() + days * 86400000).toISOString();
 
