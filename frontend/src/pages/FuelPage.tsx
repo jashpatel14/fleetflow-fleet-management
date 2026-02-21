@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { fuelAPI, vehiclesAPI, tripsAPI } from '../api/client';
-import { Plus, Fuel, Droplet, CreditCard, Clipboard, ExternalLink, AlertCircle } from 'lucide-react';
+import { Search, Plus, Fuel, Droplet, CreditCard, Clipboard, ExternalLink, AlertCircle } from 'lucide-react';
 
 const SW = 1.5;
 
@@ -10,17 +10,18 @@ const FuelPage = () => {
   const [loading, setLoad] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState('');
   const [modal, setModal] = useState(false);
   const LIMIT = 10;
 
   const load = async () => {
     setLoad(true);
     try {
-      const res = await fuelAPI.getAll({ page, limit: LIMIT });
+      const res = await fuelAPI.getAll({ search, page, limit: LIMIT });
       setLogs(res.data.logs); setTotal(res.data.total);
     } catch { /* ignore */ } finally { setLoad(false); }
   };
-  useEffect(() => { load(); }, [page]);
+  useEffect(() => { load(); }, [search, page]);
 
   const totalCost = logs.reduce((s, l) => s + l.totalCost, 0);
   const totalLitre = logs.reduce((s, l) => s + l.liters, 0);
@@ -66,7 +67,12 @@ const FuelPage = () => {
       )}
 
       <div className="toolbar" style={{ marginBottom: 16 }}>
-        <div style={{ flex: 1, fontSize: 13, color: 'var(--text-3)' }}>Track fuel expenses per vehicle and trip</div>
+        <div className="search-wrap">
+          <Search size={14} strokeWidth={SW} className="search-icon-pos" />
+          <input className="search-input" placeholder="Search plate or trip..."
+            value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+        </div>
+        <div style={{ flex: 1 }} />
         <button className="btn btn-primary" onClick={() => setModal(true)}>
           <Plus size={15} strokeWidth={SW} /> Log Fuel
         </button>

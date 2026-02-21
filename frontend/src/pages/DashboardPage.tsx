@@ -33,6 +33,39 @@ const KpiCard = ({
   </div>
 );
 
+const OperationalAlert = ({
+  icon, title, link, linkText, color, bg
+}: {
+  icon: ReactElement;
+  title: string;
+  link: string;
+  linkText: string;
+  color: string;
+  bg: string;
+}) => (
+  <Link to={link} className="card" style={{
+    padding: '14px 18px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 16,
+    border: `1.5px solid ${color}40`,
+    background: `${bg}40`,
+    textDecoration: 'none'
+  }}>
+    <div style={{
+      width: 42, height: 42, borderRadius: 10, background: bg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+    }}>
+      {cloneElement(icon as ReactElement<any>, { size: 20, strokeWidth: SW, color: color })}
+    </div>
+    <div style={{ flex: 1 }}>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-1)' }}>{title}</div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: color, marginTop: 2 }}>{linkText}</div>
+    </div>
+    <ChevronRight size={16} color="var(--text-4)" />
+  </Link>
+);
+
 const DashboardPage = () => {
   const [data, setData] = useState<any>(null);
   const [recentTrips, setTrips] = useState<any[]>([]);
@@ -54,32 +87,34 @@ const DashboardPage = () => {
     ? Math.round(((data.vehicles.onTrip + data.vehicles.available) / data.vehicles.total) * 100) : 0;
 
   return (
-    <div>
-      {/* Alerts */}
-      {data.expiringLicenses > 0 && (
-        <div className="alert alert-warning">
-          <AlertTriangle size={15} strokeWidth={SW} style={{ flexShrink: 0, marginTop: 1 }} />
-          <span>
-            <strong>{data.expiringLicenses} driver license{data.expiringLicenses > 1 ? 's' : ''}</strong> expiring within 30 days.
-            <Link to="/drivers" style={{ marginLeft: 8, fontWeight: 600, color: 'inherit', textDecoration: 'underline' }}>
-              View Drivers →
-            </Link>
-          </span>
-        </div>
-      )}
-      {data.maintenanceOpen > 0 && (
-        <div className="alert alert-warning">
-          <Wrench size={15} strokeWidth={SW} style={{ flexShrink: 0, marginTop: 1 }} />
-          <span>
-            <strong>{data.maintenanceOpen} vehicle{data.maintenanceOpen > 1 ? 's' : ''}</strong> currently in maintenance.
-            <Link to="/maintenance" style={{ marginLeft: 8, fontWeight: 600, color: 'inherit', textDecoration: 'underline' }}>
-              View Maintenance →
-            </Link>
-          </span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* 1. Critical Operational Alerts */}
+      {(data.expiringLicenses > 0 || data.maintenanceOpen > 0) && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+          {data.expiringLicenses > 0 && (
+            <OperationalAlert
+              icon={<AlertTriangle />}
+              title={`${data.expiringLicenses} Driver License${data.expiringLicenses > 1 ? 's' : ''} Expiring`}
+              link="/drivers"
+              linkText="Review Compliance & Renew →"
+              color="var(--orange)"
+              bg="var(--orange-bg)"
+            />
+          )}
+          {data.maintenanceOpen > 0 && (
+            <OperationalAlert
+              icon={<Wrench />}
+              title={`${data.maintenanceOpen} Vehicle${data.maintenanceOpen > 1 ? 's' : ''} in Maintenance`}
+              link="/maintenance"
+              linkText="Check Service Status →"
+              color="var(--blue)"
+              bg="var(--blue-bg)"
+            />
+          )}
         </div>
       )}
 
-      {/* KPIs */}
+      {/* 2. Primary Fleet KPIs */}
       <div className="kpi-grid">
         <KpiCard icon={<Truck />} label="Total Fleet" value={data.vehicles.total} sub={`${util}% utilization`} iconBg="#EFF6FF" iconColor="#2563EB" />
         <KpiCard icon={<CheckCircle2 />} label="Available" value={data.vehicles.available} iconBg="#F0FDF4" iconColor="#16A34A" />

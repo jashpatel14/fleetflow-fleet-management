@@ -40,6 +40,7 @@ export const logFuel = async (data) => {
 export const getFuelLogs = async ({
   vehicleId,
   tripId,
+  search,
   page = 1,
   limit = 10,
 }) => {
@@ -47,6 +48,12 @@ export const getFuelLogs = async ({
   const where = {
     ...(vehicleId && { vehicleId }),
     ...(tripId && { tripId }),
+    ...(search && {
+      OR: [
+        { vehicle: { licensePlate: { contains: search, mode: "insensitive" } } },
+        { trip: { tripNumber: { contains: search, mode: "insensitive" } } },
+      ],
+    }),
   };
 
   const [logs, total] = await Promise.all([

@@ -8,10 +8,11 @@ export const logFuel = asyncHandler(async (req, res) => {
 });
 
 export const getFuelLogs = asyncHandler(async (req, res) => {
-  const { vehicleId, tripId, page, limit } = req.query;
+  const { vehicleId, tripId, search, page, limit } = req.query;
   const result = await fuelService.getFuelLogs({
     vehicleId,
     tripId,
+    search,
     page,
     limit,
   });
