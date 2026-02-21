@@ -1,6 +1,6 @@
 // FleetFlow Core — Seed File
 // Run with: npm run db:seed
-// Populates all 7 tables with realistic test data
+// Populates all tables with realistic random data (20 entries each)
 
 import {
   PrismaClient,
@@ -16,8 +16,17 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const MAKES = ["TATA", "Ashok Leyland", "Mahindra", "Eicher", "BharatBenz", "Volvo"];
+const CITIES = ["Mumbai", "Pune", "Delhi", "Jaipur", "Surat", "Ahmedabad", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Indore", "Bhopal", "Lucknow", "Patna", "Nagpur"];
+const CARGO = ["Electronics", "Furniture", "Textiles", "Machinery", "FMCG", "Auto Parts", "Chemicals", "Steel", "Cement", "Agri Products"];
+const FIRST_NAMES = ["Amit", "Rahul", "Vikram", "Suresh", "Ramesh", "Anil", "Sunil", "Prakash", "Rajesh", "Mukesh", "Deepak", "Sanjay", "Vinod", "Ashok", "Vijay", "Ajay", "Ravi", "Kiran", "Nitin", "Praveen"];
+const LAST_NAMES = ["Sharma", "Verma", "Patel", "Singh", "Kumar", "Gupta", "Joshi", "Chauhan", "Yadav", "Tiwari", "Reddy", "Nair", "Iyer", "Rao", "Das"];
+
+function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function randomItem(arr) { return arr[randomInt(0, arr.length - 1)]; }
+
 async function main() {
-  console.log("🌱 Seeding FleetFlow database...");
+  console.log("🌱 Seeding FleetFlow database with 20 sample entries...");
 
   // ── Clean existing data (order matters for FK constraints) ─────────────────
   await prisma.auditLog.deleteMany();
@@ -68,298 +77,134 @@ async function main() {
   console.log(`✅ Created ${users.length} users`);
 
   // ── Vehicles ───────────────────────────────────────────────────────────────
-  const vehicles = await Promise.all([
-    prisma.vehicle.create({
+  const vehicleTypes = Object.values(VehicleType);
+  const vehicleStatuses = Object.values(VehicleStatus);
+
+  const vehiclePromises = Array.from({ length: 20 }).map((_, i) => {
+    const make = randomItem(MAKES);
+    const type = randomItem(vehicleTypes);
+    return prisma.vehicle.create({
       data: {
-        licensePlate: "MH-12-AB-1234",
-        make: "TATA",
-        model: "LPT 1615",
-        year: 2020,
-        type: VehicleType.TRUCK,
-        capacityTons: 10,
-        currentOdometer: 45000,
-        status: VehicleStatus.AVAILABLE,
-        acquisitionCost: 1800000,
-      },
-    }),
-    prisma.vehicle.create({
-      data: {
-        licensePlate: "MH-14-GH-5678",
-        make: "Ashok Leyland",
-        model: "2518",
-        year: 2019,
-        type: VehicleType.TRAILER,
-        capacityTons: 20,
-        currentOdometer: 78000,
-        status: VehicleStatus.ON_TRIP,
-        acquisitionCost: 3200000,
-      },
-    }),
-    prisma.vehicle.create({
-      data: {
-        licensePlate: "GJ-01-CD-9012",
-        make: "TATA",
-        model: "Ultra 1012",
-        year: 2021,
-        type: VehicleType.MINI_TRUCK,
-        capacityTons: 5,
-        currentOdometer: 22000,
-        status: VehicleStatus.IN_SHOP,
-        acquisitionCost: 900000,
-      },
-    }),
-    prisma.vehicle.create({
-      data: {
-        licensePlate: "DL-05-EF-3456",
-        make: "Mahindra",
-        model: "Blazo 31",
-        year: 2018,
-        type: VehicleType.TRUCK,
-        capacityTons: 12,
-        currentOdometer: 112000,
-        status: VehicleStatus.AVAILABLE,
-        acquisitionCost: 2100000,
-      },
-    }),
-    prisma.vehicle.create({
-      data: {
-        licensePlate: "KA-09-IJ-7890",
-        make: "TATA",
-        model: "Signa 4825",
-        year: 2017,
-        type: VehicleType.CONTAINER,
-        capacityTons: 25,
-        currentOdometer: 198000,
-        status: VehicleStatus.RETIRED,
-        acquisitionCost: 4500000,
-      },
-    }),
-  ]);
+        licensePlate: `MH-${randomInt(10, 49)}-${String.fromCharCode(65 + randomInt(0, 25))}${String.fromCharCode(65 + randomInt(0, 25))}-${1000 + i}`,
+        make,
+        model: `${make} Pro ${randomInt(1000, 5000)}`,
+        year: randomInt(2015, 2024),
+        type,
+        capacityTons: randomInt(5, 30),
+        currentOdometer: randomInt(10000, 200000),
+        status: randomItem(vehicleStatuses),
+        acquisitionCost: randomInt(8, 45) * 100000,
+      }
+    });
+  });
+  const vehicles = await Promise.all(vehiclePromises);
   console.log(`✅ Created ${vehicles.length} vehicles`);
 
   // ── Drivers ────────────────────────────────────────────────────────────────
-  const tomorrow = new Date();
-  tomorrow.setFullYear(tomorrow.getFullYear() + 2);
-  const expired = new Date();
-  expired.setFullYear(expired.getFullYear() - 1);
+  const tomorrow = new Date(); tomorrow.setFullYear(tomorrow.getFullYear() + 2);
+  const expired = new Date(); expired.setFullYear(expired.getFullYear() - 1);
+  const driverStatuses = Object.values(DriverStatus);
 
-  const drivers = await Promise.all([
-    prisma.driver.create({
+  const driverPromises = Array.from({ length: 20 }).map((_, i) => {
+    return prisma.driver.create({
       data: {
-        name: "John Sharma",
-        phone: "9876543210",
-        licenseNumber: "MH2020123456",
-        licenseExpiry: tomorrow,
-        vehicleCategory: VehicleType.TRUCK,
-        status: DriverStatus.ON_DUTY,
-        safetyScore: 92,
-      },
-    }),
-    prisma.driver.create({
-      data: {
-        name: "Raju Verma",
-        phone: "9876543211",
-        licenseNumber: "MH2019234567",
-        licenseExpiry: tomorrow,
-        vehicleCategory: VehicleType.TRAILER,
-        status: DriverStatus.ON_DUTY,
-        safetyScore: 85,
-      },
-    }),
-    prisma.driver.create({
-      data: {
-        name: "Suresh Patel",
-        phone: "9876543212",
-        licenseNumber: "GJ2021345678",
-        licenseExpiry: tomorrow,
-        vehicleCategory: VehicleType.MINI_TRUCK,
-        status: DriverStatus.OFF_DUTY,
-        safetyScore: 96,
-      },
-    }),
-    prisma.driver.create({
-      data: {
-        name: "Mahesh Singh",
-        phone: "9876543213",
-        licenseNumber: "DL2018456789",
-        licenseExpiry: tomorrow,
-        vehicleCategory: VehicleType.TRUCK,
-        status: DriverStatus.OFF_DUTY,
-        safetyScore: 78,
-      },
-    }),
-    prisma.driver.create({
-      data: {
-        name: "Ajay Kumar",
-        phone: "9876543214",
-        licenseNumber: "KA2020567890",
-        licenseExpiry: expired,
-        vehicleCategory: VehicleType.CONTAINER,
-        status: DriverStatus.SUSPENDED,
-        safetyScore: 55,
-      },
-    }),
-  ]);
+        name: `${randomItem(FIRST_NAMES)} ${randomItem(LAST_NAMES)}`,
+        phone: `9${randomInt(100000000, 999999999)}`,
+        licenseNumber: `DL${randomInt(2000, 2023)}${100000 + i}`,
+        licenseExpiry: randomInt(1, 10) > 2 ? tomorrow : expired,
+        vehicleCategory: randomItem(vehicleTypes),
+        status: randomItem(driverStatuses),
+        safetyScore: randomInt(60, 100),
+      }
+    });
+  });
+  const drivers = await Promise.all(driverPromises);
   console.log(`✅ Created ${drivers.length} drivers`);
 
   // ── Trips ──────────────────────────────────────────────────────────────────
   const now = new Date();
-  const trips = await Promise.all([
-    // Completed trip
-    prisma.trip.create({
+  const tripPromises = Array.from({ length: 20 }).map((_, i) => {
+    const v = randomItem(vehicles);
+    const d = randomItem(drivers);
+    const origin = randomItem(CITIES);
+    let dest = randomItem(CITIES);
+    while (dest === origin) dest = randomItem(CITIES);
+
+    const statuses = Object.values(TripStatus);
+    const status = randomItem(statuses);
+
+    return prisma.trip.create({
       data: {
-        tripNumber: "TRP-2026-0001",
-        vehicleId: vehicles[3].id,
-        driverId: drivers[3].id,
-        origin: "Mumbai",
-        destination: "Pune",
-        cargoDescription: "Electronics",
-        cargoWeightTons: 8,
-        startOdometer: 111000,
-        endOdometer: 112000,
-        revenue: 45000,
-        miscExpenses: 2000,
-        status: TripStatus.COMPLETED,
-        submittedAt: new Date(now.getTime() - 5 * 86400000),
-        approvedAt: new Date(now.getTime() - 4 * 86400000),
-        dispatchedAt: new Date(now.getTime() - 3 * 86400000),
-        completedAt: new Date(now.getTime() - 1 * 86400000),
-      },
-    }),
-    // Active dispatched trip
-    prisma.trip.create({
-      data: {
-        tripNumber: "TRP-2026-0002",
-        vehicleId: vehicles[1].id,
-        driverId: drivers[1].id,
-        origin: "Delhi",
-        destination: "Jaipur",
-        cargoDescription: "Furniture",
-        cargoWeightTons: 15,
-        startOdometer: 78000,
-        revenue: 75000,
-        miscExpenses: 0,
-        status: TripStatus.DISPATCHED,
-        submittedAt: new Date(now.getTime() - 2 * 86400000),
-        approvedAt: new Date(now.getTime() - 1 * 86400000),
-        dispatchedAt: new Date(now.getTime() - 6 * 3600000),
-      },
-    }),
-    // Draft trip
-    prisma.trip.create({
-      data: {
-        tripNumber: "TRP-2026-0003",
-        vehicleId: vehicles[0].id,
-        driverId: drivers[0].id,
-        origin: "Surat",
-        destination: "Ahmedabad",
-        cargoDescription: "Textiles",
-        cargoWeightTons: 7,
-        revenue: 28000,
-        status: TripStatus.DRAFT,
-      },
-    }),
-  ]);
+        tripNumber: `TRP-2026-${String(1000 + i).padStart(4, '0')}`,
+        vehicleId: v.id,
+        driverId: d.id,
+        origin,
+        destination: dest,
+        cargoDescription: randomItem(CARGO),
+        cargoWeightTons: randomInt(1, Math.floor(v.capacityTons) || 1), // Avoid 0 or NaN
+        startOdometer: v.currentOdometer,
+        endOdometer: status === TripStatus.COMPLETED ? v.currentOdometer + randomInt(100, 1000) : null,
+        revenue: randomInt(15, 80) * 1000,
+        miscExpenses: randomInt(0, 5) * 1000,
+        status,
+        submittedAt: status !== TripStatus.DRAFT ? new Date(now.getTime() - 5 * 86400000) : null,
+        approvedAt: [TripStatus.APPROVED, TripStatus.DISPATCHED, TripStatus.COMPLETED].includes(status) ? new Date(now.getTime() - 4 * 86400000) : null,
+        dispatchedAt: [TripStatus.DISPATCHED, TripStatus.COMPLETED].includes(status) ? new Date(now.getTime() - 3 * 86400000) : null,
+        completedAt: status === TripStatus.COMPLETED ? new Date(now.getTime() - 1 * 86400000) : null,
+      }
+    });
+  });
+  const trips = await Promise.all(tripPromises);
   console.log(`✅ Created ${trips.length} trips`);
 
   // ── Maintenance Logs ───────────────────────────────────────────────────────
-  const maintenanceLogs = await Promise.all([
-    prisma.maintenanceLog.create({
+  const maintenancePromises = Array.from({ length: 20 }).map((_, i) => {
+    const status = randomItem(Object.values(MaintenanceStatus));
+    return prisma.maintenanceLog.create({
       data: {
-        vehicleId: vehicles[2].id,
-        type: MaintenanceType.CORRECTIVE,
-        status: MaintenanceStatus.OPEN,
-        description: "Engine oil leak and brake pad replacement",
-        cost: 18000,
-        openedAt: new Date(now.getTime() - 2 * 86400000),
-      },
-    }),
-    prisma.maintenanceLog.create({
-      data: {
-        vehicleId: vehicles[0].id,
-        type: MaintenanceType.PREVENTIVE,
-        status: MaintenanceStatus.CLOSED,
-        description:
-          "Scheduled 45,000km service — oil change, filter replacement",
-        cost: 7500,
-        openedAt: new Date(now.getTime() - 10 * 86400000),
-        closedAt: new Date(now.getTime() - 8 * 86400000),
-      },
-    }),
-  ]);
+        vehicleId: randomItem(vehicles).id,
+        type: randomItem(Object.values(MaintenanceType)),
+        status,
+        description: `Routine checkup and fixes event ${i}`,
+        cost: randomInt(5, 50) * 1000,
+        openedAt: new Date(now.getTime() - randomInt(1, 15) * 86400000),
+        closedAt: status === MaintenanceStatus.CLOSED ? new Date(now.getTime() - randomInt(1, 5) * 86400000) : null,
+      }
+    });
+  });
+  const maintenanceLogs = await Promise.all(maintenancePromises);
   console.log(`✅ Created ${maintenanceLogs.length} maintenance logs`);
 
   // ── Fuel Logs ──────────────────────────────────────────────────────────────
-  const fuelLogs = await Promise.all([
-    prisma.fuelLog.create({
+  const fuelPromises = Array.from({ length: 20 }).map((_, i) => {
+    const l = randomInt(50, 300);
+    const cp = randomInt(90, 105) + Math.random();
+    return prisma.fuelLog.create({
       data: {
-        vehicleId: vehicles[3].id,
-        tripId: trips[0].id,
-        liters: 180,
-        costPerLiter: 95.5,
-        totalCost: 17190,
-      },
-    }),
-    prisma.fuelLog.create({
-      data: {
-        vehicleId: vehicles[1].id,
-        tripId: trips[1].id,
-        liters: 220,
-        costPerLiter: 96.0,
-        totalCost: 21120,
-      },
-    }),
-    prisma.fuelLog.create({
-      data: {
-        vehicleId: vehicles[0].id,
-        tripId: null,
-        liters: 100,
-        costPerLiter: 95.0,
-        totalCost: 9500,
-      },
-    }),
-  ]);
+        vehicleId: randomItem(vehicles).id,
+        tripId: randomItem(trips).id,
+        liters: l,
+        costPerLiter: cp,
+        totalCost: l * cp,
+      }
+    });
+  });
+  const fuelLogs = await Promise.all(fuelPromises);
   console.log(`✅ Created ${fuelLogs.length} fuel logs`);
 
   // ── Audit Logs ─────────────────────────────────────────────────────────────
-  await Promise.all([
-    prisma.auditLog.create({
+  const auditPromises = Array.from({ length: 10 }).map((_, i) => {
+    return prisma.auditLog.create({
       data: {
-        userId: users[1].id,
-        action: "TRIP_DISPATCHED",
-        entity: "Trip",
-        entityId: trips[1].id,
-        detail: JSON.stringify({ status: "DISPATCHED" }),
-      },
-    }),
-    prisma.auditLog.create({
-      data: {
-        userId: users[0].id,
-        action: "TRIP_COMPLETED",
-        entity: "Trip",
-        entityId: trips[0].id,
-        detail: JSON.stringify({ status: "COMPLETED", distance: 1000 }),
-      },
-    }),
-    prisma.auditLog.create({
-      data: {
-        userId: users[0].id,
-        action: "VEHICLE_RETIRED",
-        entity: "Vehicle",
-        entityId: vehicles[4].id,
-        detail: JSON.stringify({ status: "RETIRED" }),
-      },
-    }),
-    prisma.auditLog.create({
-      data: {
-        userId: users[2].id,
-        action: "DRIVER_SUSPENDED",
-        entity: "Driver",
-        entityId: drivers[4].id,
-        detail: JSON.stringify({ reason: "License violations" }),
-      },
-    }),
-  ]);
+        userId: randomItem(users).id,
+        action: randomItem(["TRIP_CREATED", "TRIP_DISPATCHED", "TRIP_COMPLETED", "VEHICLE_MAINTENANCE", "DRIVER_UPDATED"]),
+        entity: randomItem(["Trip", "Vehicle", "Driver"]),
+        entityId: `random-id-${i}`,
+        detail: JSON.stringify({ note: `Random action performed ${i}` }),
+      }
+    });
+  });
+  await Promise.all(auditPromises);
   console.log("✅ Created audit logs");
 
   console.log("\n🚛 FleetFlow database seeded successfully!");

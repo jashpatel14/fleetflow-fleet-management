@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { reportsAPI, vehiclesAPI } from '../api/client';
-import { TrendingUp, TrendingDown, BarChart } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart as BarChartIcon } from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 
 const SW = 1.5;
 
@@ -67,7 +70,7 @@ const ReportsPage = () => {
         <div className="kpi-card">
           <div className="kpi-icon-row">
             <div className="kpi-icon-wrap" style={{ background: netPL >= 0 ? 'var(--green-bg)' : 'var(--red-bg)' }}>
-              <BarChart size={18} strokeWidth={SW} color={netPL >= 0 ? 'var(--green-text)' : 'var(--red-text)'} />
+              <BarChartIcon size={18} strokeWidth={SW} color={netPL >= 0 ? 'var(--green-text)' : 'var(--red-text)'} />
             </div>
           </div>
           <div className="kpi-label">Net P&amp;L {year}</div>
@@ -77,46 +80,76 @@ const ReportsPage = () => {
         </div>
       </div>
 
-      <div className="reports-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}>
-        {/* Monthly Table */}
-        <div className="card">
-          <div className="card-header">
-            <div>
-              <div className="card-title">Monthly P&L</div>
-              <div className="card-subtitle">Revenue vs expenses breakdown</div>
+      <div className="reports-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Chart Card */}
+          <div className="card">
+            <div className="card-header">
+              <div>
+                <div className="card-title">Financial Overview</div>
+                <div className="card-subtitle">Monthly Revenue vs Expenses</div>
+              </div>
+              <select className="filter-select" value={year} onChange={e => setYear(+e.target.value)}>
+                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
             </div>
-            <select className="filter-select" value={year} onChange={e => setYear(+e.target.value)}>
-              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
+            <div className="card-body" style={{ height: 320, padding: '20px 20px 0 0' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthly} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-light)" />
+                  <XAxis dataKey="monthName" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dx={-10} tickFormatter={(v) => `₹${v >= 100000 ? (v / 100000).toFixed(1) + 'L' : v / 1000 + 'k'}`} />
+                  <Tooltip
+                    cursor={{ fill: 'var(--bg)' }}
+                    contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}
+                    formatter={(value: number) => [`₹${value.toLocaleString()}`, undefined]}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: 12, bottom: 0 }} />
+                  <Bar dataKey="revenue" name="Revenue" fill="var(--green)" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                  <Bar dataKey="maintCost" name="Maintenance" fill="var(--orange)" stackId="exp" radius={[0, 0, 0, 0]} maxBarSize={40} />
+                  <Bar dataKey="fuelCost" name="Fuel" fill="var(--red)" stackId="exp" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div className="table-scroll">
-            <table>
-              <thead><tr>
-                <th>Month</th><th className="right">Trips</th>
-                <th className="right">Revenue</th><th className="right">Fuel</th>
-                <th className="right">Maint.</th><th className="right">Net P/L</th>
-                <th style={{ width: 80 }}>Bar</th>
-              </tr></thead>
-              <tbody>
-                {monthly.map((m: any) => (
-                  <tr key={m.month}>
-                    <td style={{ fontWeight: 600 }}>{m.monthName}</td>
-                    <td className="right text-muted">{m.trips}</td>
-                    <td className="right mono">₹{m.revenue.toLocaleString()}</td>
-                    <td className="right mono text-muted">₹{m.fuelCost.toLocaleString()}</td>
-                    <td className="right mono text-muted">₹{m.maintCost.toLocaleString()}</td>
-                    <td className="right mono" style={{ fontWeight: 600, color: m.netPL >= 0 ? 'var(--green-text)' : 'var(--red-text)' }}>
-                      {m.netPL >= 0 ? '+' : ''}₹{m.netPL.toLocaleString()}
-                    </td>
-                    <td>
-                      <div style={{ width: '100%', height: 6, background: 'var(--border)', borderRadius: 3 }}>
-                        <div style={{ width: `${(m.revenue / maxRev) * 100}%`, height: '100%', background: 'var(--primary)', borderRadius: 3, transition: 'width 0.3s ease' }} />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          {/* Monthly Table */}
+          <div className="card">
+            <div className="card-header">
+              <div>
+                <div className="card-title">Monthly Breakdown</div>
+                <div className="card-subtitle">Detailed revenue and expenses table</div>
+              </div>
+            </div>
+            <div className="table-scroll">
+              <table>
+                <thead><tr>
+                  <th>Month</th><th className="right">Trips</th>
+                  <th className="right">Revenue</th><th className="right">Fuel</th>
+                  <th className="right">Maint.</th><th className="right">Net P/L</th>
+                  <th style={{ width: 80 }}>Bar</th>
+                </tr></thead>
+                <tbody>
+                  {monthly.map((m: any) => (
+                    <tr key={m.month}>
+                      <td style={{ fontWeight: 600 }}>{m.monthName}</td>
+                      <td className="right text-muted">{m.trips}</td>
+                      <td className="right mono">₹{m.revenue.toLocaleString()}</td>
+                      <td className="right mono text-muted">₹{m.fuelCost.toLocaleString()}</td>
+                      <td className="right mono text-muted">₹{m.maintCost.toLocaleString()}</td>
+                      <td className="right mono" style={{ fontWeight: 600, color: m.netPL >= 0 ? 'var(--green-text)' : 'var(--red-text)' }}>
+                        {m.netPL >= 0 ? '+' : ''}₹{m.netPL.toLocaleString()}
+                      </td>
+                      <td>
+                        <div style={{ width: '100%', height: 6, background: 'var(--border)', borderRadius: 3 }}>
+                          <div style={{ width: `${(m.revenue / maxRev) * 100}%`, height: '100%', background: 'var(--primary)', borderRadius: 3, transition: 'width 0.3s ease' }} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -161,7 +194,7 @@ const ReportsPage = () => {
               </div>
             ) : (
               <div className="empty-state" style={{ padding: '28px 0' }}>
-                <div className="empty-icon"><BarChart size={30} strokeWidth={1} color="var(--text-4)" /></div>
+                <div className="empty-icon"><BarChartIcon size={30} strokeWidth={1} color="var(--text-4)" /></div>
                 <div className="empty-desc">Select a vehicle to view its report</div>
               </div>
             )}
