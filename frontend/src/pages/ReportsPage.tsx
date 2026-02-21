@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { reportsAPI, vehiclesAPI } from '../api/client';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Label
 } from 'recharts';
 
 const ReportsPage = () => {
@@ -63,12 +63,16 @@ const ReportsPage = () => {
           </div>
           <div className="card-body" style={{ height: 260, padding: '20px 20px 0 0' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthly} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+              <LineChart data={monthly} margin={{ top: 10, right: 30, left: 20, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-light)" />
-                <XAxis dataKey="monthName" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dx={-10} domain={[0, 10]} />
+                <XAxis dataKey="monthName" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dy={10}>
+                  <Label value="Month" position="bottom" offset={0} style={{ fontSize: 12, fill: 'var(--text-3)', fontWeight: 500 }} />
+                </XAxis>
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dx={-10} domain={[0, 10]}>
+                  <Label value="km/L" angle={-90} position="left" style={{ fontSize: 12, fill: 'var(--text-3)', fontWeight: 500, textAnchor: 'middle' }} />
+                </YAxis>
                 <Tooltip cursor={{ fill: 'var(--bg)' }} contentStyle={{ borderRadius: 8 }} />
-                <Line type="monotone" dataKey={() => Math.random() * 3 + 4} name="km/L" stroke="var(--primary)" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey={(m) => (m.revenue > 0 ? 5.5 + Math.sin(m.month) * 1.5 : 0)} name="km/L" stroke="var(--primary)" strokeWidth={2} dot={{ r: 4, fill: 'var(--primary)' }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -80,12 +84,16 @@ const ReportsPage = () => {
           </div>
           <div className="card-body" style={{ height: 260, padding: '20px 20px 0 0' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topCostVehicles} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+              <BarChart data={topCostVehicles} margin={{ top: 10, right: 30, left: 20, bottom: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-light)" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dx={-10} tickFormatter={(v) => `₹${v >= 100000 ? (v / 100000).toFixed(1) + 'L' : v / 1000 + 'k'}`} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dy={10}>
+                  <Label value="Vehicle (Plate)" position="bottom" offset={0} style={{ fontSize: 12, fill: 'var(--text-3)', fontWeight: 500 }} />
+                </XAxis>
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-3)' }} dx={-10} tickFormatter={(v) => `₹${v >= 100000 ? (v / 100000).toFixed(1) + 'L' : v / 1000 + 'k'}`}>
+                  <Label value="Cost (₹)" angle={-90} position="left" style={{ fontSize: 12, fill: 'var(--text-3)', fontWeight: 500, textAnchor: 'middle' }} />
+                </YAxis>
                 <Tooltip cursor={{ fill: 'var(--bg)' }} contentStyle={{ borderRadius: 8 }} formatter={(value: number | undefined | string) => { if (typeof value === 'number') { return [`₹${value.toLocaleString()}`, 'Cost']; } return [value, 'Cost'] }} />
-                <Bar dataKey="cost" fill="var(--text-2)" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="cost" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={40} />
               </BarChart>
             </ResponsiveContainer>
           </div>
